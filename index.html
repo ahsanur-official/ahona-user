@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ahona Islam</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topBar">
+    <div class="brand">Ahona Islam</div>
+    <div class="controls">
+      <button id="toggleTheme" aria-label="Toggle dark mode">🌙</button>
+      <div class="userArea" id="userArea">
+        <button id="loginBtn">Log in</button>
+        <button id="registerBtn">Register</button>
+        <button id="userIconBtn" class="hidden" aria-label="User profile">👤</button>
+        <div id="userMenu" class="userMenu hidden" aria-hidden="true">
+          <div id="currentUserName"></div>
+          <button id="profileBtn">👤 Profile</button>
+          <button id="logoutBtn">🚪 Log out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="posts" class="posts"></section>
+
+    <!-- Auth modals -->
+    <div id="authModalOverlay" class="modal hidden">
+      <div class="modalContent authModalContent">
+        <div class="authModalBg"></div>
+        <div class="authModalInner">
+          <!-- Login Form -->
+          <form id="loginForm" class="authForm hidden">
+            <div class="authHeader">
+              <h2>👋 Welcome Back</h2>
+              <p class="authSubtitle">Continue reading amazing stories</p>
+              <button type="button" class="closeBtn" id="cancelLogin">✕</button>
+            </div>
+
+            <div class="formGroup">
+              <label for="loginUsername">👤 Username</label>
+              <input id="loginUsername" name="username" type="text" placeholder="Enter your username" required />
+            </div>
+            
+            <div class="formGroup">
+              <label for="loginPassword">🔐 Password</label>
+              <input id="loginPassword" name="password" type="password" placeholder="Enter your password" required />
+            </div>
+
+            <button type="submit" class="authSubmitBtn">Sign In ✨</button>
+
+            <div class="authDivider">
+              <span>or</span>
+            </div>
+
+            <p class="authToggle">
+              Don't have an account?
+              <button type="button" class="authToggleBtn" onclick="switchToRegister()">Create one</button>
+            </p>
+          </form>
+
+          <!-- Register Form -->
+          <form id="registerForm" class="authForm hidden">
+            <div class="authHeader">
+              <h2>🎉 Join Our Community</h2>
+              <p class="authSubtitle">Read amazing stories, like and comment</p>
+              <button type="button" class="closeBtn" id="cancelRegister">✕</button>
+            </div>
+
+            <div class="formGroup">
+              <label for="registerName">👤 Full Name</label>
+              <input id="registerName" name="fullName" type="text" placeholder="Your full name" required />
+            </div>
+
+            <div class="formGroup">
+              <label for="registerUsername">💬 Username</label>
+              <input id="registerUsername" name="username" type="text" placeholder="Choose a unique username" required />
+            </div>
+            
+            <div class="formGroup">
+              <label for="registerEmail">📧 Email</label>
+              <input id="registerEmail" name="email" type="email" placeholder="your.email@example.com" required />
+            </div>
+
+            <div class="formGroup">
+              <label for="registerAddress">📍 Address</label>
+              <input id="registerAddress" name="address" type="text" placeholder="City, Country" required />
+            </div>
+            
+            <div class="formGroup">
+              <label for="registerPassword">🔐 Password</label>
+              <input id="registerPassword" name="password" type="password" placeholder="Choose a strong password" required />
+            </div>
+
+            <div class="formGroup">
+              <label for="registerConfirmPassword">🔐 Confirm Password</label>
+              <input id="registerConfirmPassword" name="confirmPassword" type="password" placeholder="Confirm your password" required />
+            </div>
+
+            <button type="submit" class="authSubmitBtn">Create Account 🚀</button>
+
+            <div class="authDivider">
+              <span>or</span>
+            </div>
+
+            <p class="authToggle">
+              Already have an account?
+              <button type="button" class="authToggleBtn" onclick="switchToLogin()">Sign in</button>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile modal for user account management -->
+    <div id="profileModal" class="modal hidden">
+      <div class="modalContent profileModalContent">
+        <div class="modalHeader">
+          <h3 id="profileTitle">📋 Profile & Account</h3>
+          <button type="button" class="closeBtn" id="closeProfile">✕</button>
+        </div>
+        <div id="profileContent" class="modalBody"></div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="script-firebase.js"></script>
+</body>
+</html>
