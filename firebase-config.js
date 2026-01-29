@@ -271,7 +271,7 @@ async function createPost(postData) {
       ...postData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-      publishedAt: serverTimestamp(),
+      publishedAt: postData.publishedAt || serverTimestamp(),
       views: 0,
       likes: 0,
       comments: 0,
@@ -279,6 +279,20 @@ async function createPost(postData) {
     return docRef.id;
   } catch (error) {
     console.error("Error creating post:", error);
+    return null;
+  }
+}
+
+// Upload an image for posts and return download URL
+async function uploadPostImage(uid, file, filename = null) {
+  try {
+    const name = filename || `${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, `post-images/${uid}/${name}`);
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    return downloadURL;
+  } catch (error) {
+    console.error('Error uploading post image:', error);
     return null;
   }
 }
@@ -548,6 +562,7 @@ async function addComment(postId, userId, userName, text) {
       userId: userId,
       userName: userName,
       text: text,
+      parentId: null,
       createdAt: serverTimestamp(),
       likes: 0,
     });
@@ -572,6 +587,7 @@ async function getPostComments(postId) {
       orderBy("createdAt", "desc"),
     );
     const querySnapshot = await getDocs(q);
+    // return comments with parentId support so UI can render threads
     return querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -579,6 +595,107 @@ async function getPostComments(postId) {
   } catch (error) {
     console.error("Error getting comments:", error);
     return [];
+  }
+}
+
+// Allow comments with optional parentId for threaded replies
+async function addThreadedComment(postId, userId, userName, text, parentId = null) {
+  try {
+    const docRef = await addDoc(collection(db, "comments"), {
+      postId,
+      userId,
+      userName,
+      text,
+      parentId: parentId || null,
+      createdAt: serverTimestamp(),
+      likes: 0,
+    });
+
+    // Increment post comment count
+    await updateDoc(doc(db, "posts", postId), {
+      comments: increment(1),
+    });
+
+    return docRef.id;
+  } catch (error) {
+    console.error("Error adding threaded comment:", error);
+    return null;
+  }
+}
+
+// Save / unsave posts for a user (persist in users doc as `savedPosts` array)
+async function savePostForUser(uid, postId) {
+  try {
+    const userRef = doc(db, "users", uid);
+    await updateDoc(userRef, {
+      savedPosts: arrayUnion(postId),
+      updatedAt: serverTimestamp(),
+    });
+    return true;
+  } catch (error) {
+    console.error("Error saving post for user:", error);
+    return false;
+  }
+}
+
+async function unsavePostForUser(uid, postId) {
+  try {
+    const userRef = doc(db, "users", uid);
+    await updateDoc(userRef, {
+      savedPosts: arrayRemove(postId),
+      updatedAt: serverTimestamp(),
+    });
+    return true;
+  } catch (error) {
+    console.error("Error unsaving post for user:", error);
+    return false;
+  }
+}
+
+async function getSavedPostsForUser(uid) {
+  try {
+    const userDoc = await getDoc(doc(db, "users", uid));
+    if (!userDoc.exists()) return [];
+    const data = userDoc.data();
+    const ids = data.savedPosts || [];
+    if (ids.length === 0) return [];
+    // fetch posts by ids (batched)
+    const posts = [];
+    for (const id of ids) {
+      const p = await getPost(id);
+      if (p) posts.push(p);
+    }
+    return posts;
+  } catch (error) {
+    console.error("Error getting saved posts:", error);
+    return [];
+  }
+}
+
+// Follow / unfollow users: maintain followers and following arrays on user docs
+async function followUser(followerUid, targetUid) {
+  try {
+    const followerRef = doc(db, "users", followerUid);
+    const targetRef = doc(db, "users", targetUid);
+    await updateDoc(followerRef, { following: arrayUnion(targetUid), updatedAt: serverTimestamp() });
+    await updateDoc(targetRef, { followers: arrayUnion(followerUid), updatedAt: serverTimestamp() });
+    return true;
+  } catch (error) {
+    console.error("Error following user:", error);
+    return false;
+  }
+}
+
+async function unfollowUser(followerUid, targetUid) {
+  try {
+    const followerRef = doc(db, "users", followerUid);
+    const targetRef = doc(db, "users", targetUid);
+    await updateDoc(followerRef, { following: arrayRemove(targetUid), updatedAt: serverTimestamp() });
+    await updateDoc(targetRef, { followers: arrayRemove(followerUid), updatedAt: serverTimestamp() });
+    return true;
+  } catch (error) {
+    console.error("Error unfollowing user:", error);
+    return false;
   }
 }
 
@@ -671,6 +788,16 @@ export {
   addComment,
   getPostComments,
   deleteComment,
+  addThreadedComment,
+  // Post images
+  uploadPostImage,
+  // Saved posts
+  savePostForUser,
+  unsavePostForUser,
+  getSavedPostsForUser,
+  // Follow
+  followUser,
+  unfollowUser,
   // Analytics
   getAnalytics,
 };

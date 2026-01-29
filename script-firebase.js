@@ -16,7 +16,11 @@ import {
   isPostLikedByUser,
   addComment,
   getPostComments,
+  saveDraft,
+  updateDraft,
+  getUserDrafts,
 } from "../firebase-config.js";
+import { renderProfileModalFancy } from "./profile-upgrade.js";
 
 // ============================================
 // DOM Elements
@@ -39,6 +43,11 @@ const logoutBtn = document.getElementById("logoutBtn");
 const profileModal = document.getElementById("profileModal");
 const closeProfile = document.getElementById("closeProfile");
 const profileContent = document.getElementById("profileContent");
+const notifBtn = document.getElementById("notifBtn");
+const notifPanel = document.getElementById("notifPanel");
+const notifList = document.getElementById("notifList");
+const notifBadge = document.getElementById("notifBadge");
+const clearNotifs = document.getElementById("clearNotifs");
 
 // ============================================
 // State
@@ -84,6 +93,46 @@ function showNotification(message, type = "info") {
     notification.style.animation = "slideOut 0.3s ease";
     setTimeout(() => notification.remove(), 300);
   }, 3000);
+}
+
+// In-app notification center (simple, client-side)
+const APP_NOTIFICATIONS = [];
+function renderNotifBadge() {
+  const n = APP_NOTIFICATIONS.length;
+  if (!notifBadge) return;
+  notifBadge.textContent = String(n);
+  if (n === 0) notifBadge.classList.add('hidden'); else notifBadge.classList.remove('hidden');
+}
+
+function renderNotifPanel() {
+  if (!notifList) return;
+  if (APP_NOTIFICATIONS.length === 0) {
+    notifList.innerHTML = '<div style="color:var(--secondary);padding:8px;text-align:center">No notifications</div>';
+    return;
+  }
+  notifList.innerHTML = APP_NOTIFICATIONS.map(n => `<div style="padding:8px;border-bottom:1px solid var(--border)"><div style="font-weight:700">${escapeHTML(n.title)}</div><div style="font-size:13px;color:var(--secondary)">${escapeHTML(n.text)}</div></div>`).join('');
+}
+
+window.pushAppNotification = function(title, text){
+  APP_NOTIFICATIONS.unshift({title, text, id:Date.now()});
+  if (APP_NOTIFICATIONS.length>100) APP_NOTIFICATIONS.length = 100;
+  renderNotifBadge();
+  renderNotifPanel();
+};
+
+if (notifBtn) {
+  notifBtn.addEventListener('click', (e) => {
+    notifPanel.classList.toggle('hidden');
+    notifPanel.setAttribute('aria-hidden', notifPanel.classList.contains('hidden'));
+  });
+}
+
+if (clearNotifs) {
+  clearNotifs.addEventListener('click', () => {
+    APP_NOTIFICATIONS.length = 0;
+    renderNotifBadge();
+    renderNotifPanel();
+  });
 }
 
 function estimateReadingTime(html) {
@@ -164,8 +213,28 @@ async function renderPosts() {
       isLiked = await isPostLikedByUser(post.id, auth.currentUser.uid);
     }
 
-    // Get comments
+    // Get comments (support threaded comments with parentId)
     const comments = await getPostComments(post.id);
+    // build comment tree map
+    const commentsByParent = {};
+    comments.forEach(c => {
+      const pid = c.parentId || null;
+      if (!commentsByParent[pid]) commentsByParent[pid] = [];
+      commentsByParent[pid].push(c);
+    });
+    function renderComment(c) {
+      const replies = commentsByParent[c.id] || [];
+      return `
+        <div class="comment">
+          <div class="commentName">${escapeHTML(c.userName)}</div>
+          <div class="commentText">${escapeHTML(c.text)}</div>
+          ${replies.length > 0 ? `<div class="commentReplies">${replies.slice(0,2).map(r => `
+            <div class="comment reply"><div class="commentName">${escapeHTML(r.userName)}</div><div class="commentText">${escapeHTML(r.text)}</div></div>
+          `).join('')}${replies.length > 2 ? `<div class="moreReplies">+${replies.length - 2} more</div>` : ''}</div>` : ''}
+        </div>`;
+    }
+    const topComments = (commentsByParent[null] || []).slice(0,3);
+    const commentsHTML = topComments.length === 0 ? '<div class="pf-empty">No comments yet</div>' : topComments.map(renderComment).join('');
 
     const tagsHTML =
       (post.tags || []).length > 0
@@ -205,16 +274,7 @@ async function renderPosts() {
 
       <div class="comments" data-post-id="${post.id}">
         <div class="commentList">
-          ${comments
-            .slice(0, 3)
-            .map(
-              (c) =>
-                `<div class="comment">
-                <div class="commentName">${escapeHTML(c.userName)}</div>
-                <div class="commentText">${escapeHTML(c.text)}</div>
-              </div>`
-            )
-            .join("")}
+          ${commentsHTML}
         </div>
         <form class="commentForm" data-post-id="${post.id}">
           ${auth.currentUser ? "" : `<input name="name" placeholder="Name (optional)"/>`}
@@ -241,10 +301,12 @@ async function renderPosts() {
         await unlikePost(postId, auth.currentUser.uid);
         btn.dataset.like = "false";
         btn.classList.remove("liked");
+        if (window.pushAppNotification) window.pushAppNotification('Interaction', 'You unliked a post');
       } else {
         await likePost(postId, auth.currentUser.uid);
         btn.dataset.like = "true";
         btn.classList.add("liked");
+        if (window.pushAppNotification) window.pushAppNotification('Interaction', 'You liked a post');
       }
 
       await renderPosts();
@@ -264,6 +326,7 @@ async function renderPosts() {
 
       await addComment(postId, auth.currentUser?.uid || "", name, text);
       form.reset();
+      if (window.pushAppNotification) window.pushAppNotification('Comment', 'Your comment was posted');
       await renderPosts();
     });
 
@@ -346,7 +409,7 @@ authModalOverlay.addEventListener("click", (e) => {
 // Login form
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const email = document.getElementById("loginUsername").value.trim();
+  const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
 
   try {
@@ -407,27 +470,23 @@ document.addEventListener("click", (e) => {
   }
 });
 
-profileBtn.addEventListener("click", () => {
+profileBtn.addEventListener("click", async () => {
   if (!auth.currentUser || !currentUserData) {
     showNotification("Not signed in", "error");
     return;
   }
 
-  profileContent.innerHTML = `
-    <div style="background:var(--soft);padding:16px;border-radius:12px;margin-bottom:16px">
-      <h3 style="margin:0 0 12px 0;color:var(--accent-primary)">👤 Profile</h3>
-      <p><strong>Name:</strong> ${escapeHTML(currentUserData.displayName || "Not set")}</p>
-      <p><strong>Email:</strong> ${escapeHTML(auth.currentUser.email)}</p>
-      <p><strong>Bio:</strong> ${escapeHTML(currentUserData.bio || "Not set")}</p>
-      <p><strong>Member Since:</strong> ${new Date(currentUserData.createdAt?.toDate?.() || new Date()).toLocaleDateString()}</p>
-    </div>
-  `;
-
-  profileModal.classList.remove("hidden");
+  try {
+    await renderProfileModalFancy();
+  } catch (err) {
+    console.error(err);
+    showNotification("Unable to open profile", "error");
+  }
 });
 
 closeProfile.addEventListener("click", () => {
   profileModal.classList.add("hidden");
+  document.body.classList.remove("modal-open");
 });
 
 logoutBtn.addEventListener("click", async () => {
@@ -440,3 +499,29 @@ logoutBtn.addEventListener("click", async () => {
 // Initialize
 // ============================================
 renderPosts();
+
+// Simple autosave helper for editors: call `window.autoSave.start(selector, uid, intervalMs)`
+window.autoSave = (function(){
+  let timer = null;
+  let currentDraftId = null;
+  return {
+    start: function(selector, uid, intervalMs = 5000){
+      const el = document.querySelector(selector);
+      if (!el) return false;
+      if (timer) clearInterval(timer);
+      timer = setInterval(async () => {
+        const content = el.value || el.innerHTML || '';
+        if (!content) return;
+        try {
+          if (!currentDraftId) {
+            currentDraftId = await saveDraft(uid, { title: document.title || 'draft', content });
+          } else {
+            await updateDraft(currentDraftId, { content });
+          }
+        } catch (err) { console.error(err); }
+      }, intervalMs);
+      return true;
+    },
+    stop: function(){ if (timer) clearInterval(timer); timer = null; currentDraftId = null; }
+  };
+})();

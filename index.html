@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ahona Islam</title>
+  <title>Ahona Islam — User Panel</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="topBar">
     <div class="brand">Ahona Islam</div>
     <div class="controls">
-      <button id="toggleTheme" aria-label="Toggle dark mode">🌙</button>
+      <button id="toggleTheme" aria-label="Toggle dark mode">☀️</button>
+      <button id="notifBtn" aria-label="Notifications" class="notifBtn">🔔<span id="notifBadge" class="notifBadge hidden">0</span></button>
       <div class="userArea" id="userArea">
         <button id="loginBtn">Log in</button>
         <button id="registerBtn">Register</button>
@@ -20,11 +21,43 @@
           <button id="profileBtn">👤 Profile</button>
           <button id="logoutBtn">🚪 Log out</button>
         </div>
+        <div id="notifPanel" class="userMenu hidden" aria-hidden="true">
+          <div style="padding:8px 12px;font-weight:700;border-bottom:1px solid var(--border)">Notifications</div>
+          <div id="notifList" style="max-height:320px;overflow:auto;padding:8px;min-width:260px"></div>
+          <div style="padding:8px;border-top:1px solid var(--border);text-align:center"><button id="clearNotifs" class="btn btn-ghost">Clear</button></div>
+        </div>
       </div>
     </div>
   </header>
 
+  <!-- Hero Section -->
+  <section class="heroSection">
+    <div class="heroContent">
+      <div class="heroIcon">📚</div>
+      <h1 class="heroTitle">Welcome to Ahona's Stories</h1>
+      <p class="heroSubtitle">Discover beautiful novels, poems, and short stories crafted with passion</p>
+    </div>
+  </section>
+
   <main class="container">
+    <!-- Search & Filter Section -->
+    <section class="filterSection">
+      <div class="searchBar">
+        <span class="searchIcon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search stories, poems, or novels..." />
+      </div>
+      <div class="categoryFilters">
+        <button class="filterBtn active" data-category="all">All Stories</button>
+        <button class="filterBtn" data-category="Novel">📖 Novels</button>
+        <button class="filterBtn" data-category="Poem">✍️ Poems</button>
+        <button class="filterBtn" data-category="Short Story">📝 Short Stories</button>
+      </div>
+    </section>
+
+    <!-- Featured Posts -->
+    <section id="featuredPosts" class="featuredPosts"></section>
+
+    <!-- All Posts -->
     <section id="posts" class="posts"></section>
 
     <!-- Auth modals -->
@@ -41,8 +74,8 @@
             </div>
 
             <div class="formGroup">
-              <label for="loginUsername">👤 Username</label>
-              <input id="loginUsername" name="username" type="text" placeholder="Enter your username" required />
+              <label for="loginEmail">📧 Email</label>
+              <input id="loginEmail" name="email" type="email" placeholder="you.email@example.com" required />
             </div>
             
             <div class="formGroup">
@@ -126,6 +159,7 @@
       </div>
     </div>
   </main>
+
 
   <script type="module" src="script-firebase.js"></script>
 </body>
