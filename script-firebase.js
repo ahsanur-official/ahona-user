@@ -69,6 +69,12 @@ function escapeHTML(s) {
     })[m]);
 }
 
+function appendCacheBuster(url) {
+  if (!url) return url;
+  const sep = url.includes("?") ? "&" : "?";
+  return `${url}${sep}v=${Date.now()}`;
+}
+
 function showNotification(message, type = "info") {
   const notification = document.createElement("div");
   notification.className = `notification notification-${type}`;
@@ -141,6 +147,91 @@ function estimateReadingTime(html) {
   const words = text.trim().split(/\s+/).filter(Boolean).length || 0;
   const minutes = Math.max(1, Math.round(words / 200));
   return { words, minutes };
+}
+
+function initTypewriter() {
+  const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const targets = Array.from(document.querySelectorAll(".typewriterTarget"));
+  if (targets.length === 0 || prefersReduced) return;
+
+  targets.forEach((el, index) => {
+    const animation = (el.dataset.animation || "loop").toLowerCase();
+    const rawPhrases = el.dataset.phrases || el.textContent || "";
+    const phrases = rawPhrases
+      .split("|")
+      .map((phrase) => phrase.trim())
+      .filter(Boolean);
+
+    if (phrases.length === 0) return;
+
+    el.classList.add("typewriter");
+    if (animation === "fade") el.classList.add("typewriter--fade");
+    el.textContent = "";
+
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+
+    const typeSpeed = 55;
+    const deleteSpeed = 28;
+    const pause = 1200;
+    const fadePause = 700;
+    const fadeDuration = 400;
+
+    const tick = () => {
+      const phrase = phrases[phraseIndex];
+
+      if (animation === "once") {
+        charIndex += 1;
+        el.textContent = phrase.slice(0, charIndex);
+        if (charIndex === phrase.length) return;
+        setTimeout(tick, typeSpeed);
+        return;
+      }
+
+      if (animation === "fade") {
+        charIndex += 1;
+        el.textContent = phrase.slice(0, charIndex);
+        if (charIndex === phrase.length) {
+          setTimeout(() => {
+            el.classList.add("tw-fade-out");
+            setTimeout(() => {
+              el.classList.remove("tw-fade-out");
+              phraseIndex = (phraseIndex + 1) % phrases.length;
+              charIndex = 0;
+              el.textContent = "";
+              setTimeout(tick, fadePause);
+            }, fadeDuration);
+          }, pause);
+          return;
+        }
+
+        setTimeout(tick, typeSpeed);
+        return;
+      }
+
+      if (!isDeleting) {
+        charIndex += 1;
+        el.textContent = phrase.slice(0, charIndex);
+        if (charIndex === phrase.length) {
+          isDeleting = true;
+          setTimeout(tick, pause);
+          return;
+        }
+      } else {
+        charIndex -= 1;
+        el.textContent = phrase.slice(0, charIndex);
+        if (charIndex === 0) {
+          isDeleting = false;
+          phraseIndex = (phraseIndex + 1) % phrases.length;
+        }
+      }
+
+      setTimeout(tick, isDeleting ? deleteSpeed : typeSpeed);
+    };
+
+    setTimeout(tick, 400 + index * 500);
+  });
 }
 
 // ============================================
@@ -354,12 +445,26 @@ function updateTopbar() {
     registerBtn.classList.add("hidden");
     userIconBtn.classList.remove("hidden");
     currentUserName.textContent = `Signed in: ${currentUserData.displayName || user.email}`;
+
+    if (currentUserData.profilePic) {
+      const avatarUrl = appendCacheBuster(currentUserData.profilePic);
+      userIconBtn.classList.add("has-avatar");
+      userIconBtn.style.backgroundImage = `url("${avatarUrl}")`;
+      userIconBtn.textContent = "";
+    } else {
+      userIconBtn.classList.remove("has-avatar");
+      userIconBtn.style.backgroundImage = "";
+      userIconBtn.textContent = "👤";
+    }
   } else {
     loginBtn.classList.remove("hidden");
     registerBtn.classList.remove("hidden");
     userIconBtn.classList.add("hidden");
     userMenu.classList.add("hidden");
     currentUserName.textContent = "";
+    userIconBtn.classList.remove("has-avatar");
+    userIconBtn.style.backgroundImage = "";
+    userIconBtn.textContent = "👤";
   }
 }
 
@@ -498,6 +603,7 @@ logoutBtn.addEventListener("click", async () => {
 // ============================================
 // Initialize
 // ============================================
+initTypewriter();
 renderPosts();
 
 // Simple autosave helper for editors: call `window.autoSave.start(selector, uid, intervalMs)`

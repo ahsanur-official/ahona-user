@@ -352,13 +352,6 @@ body.dark #toggleTheme{
   -webkit-text-fill-color:transparent;
   background-clip:text;
   line-height:1.2;
-  animation:gradientShift 3s ease infinite;
-  background-size:200% 200%;
-}
-
-@keyframes gradientShift{
-  0%, 100%{ background-position:0% 50%; }
-  50%{ background-position:100% 50%; }
 }
 
 .heroSubtitle{
@@ -366,6 +359,26 @@ body.dark #toggleTheme{
   color:var(--secondary);
   margin:0 0 40px 0;
   line-height:1.6;
+}
+
+.typewriter{
+  display:inline-block;
+  border-right:2px solid var(--accent-secondary);
+  padding-right:3px;
+  animation:blinkCaret 0.75s step-end infinite;
+}
+
+.typewriter--fade{
+  transition:opacity 0.4s ease;
+}
+
+.typewriter--fade.tw-fade-out{
+  opacity:0;
+}
+
+@keyframes blinkCaret{
+  0%, 100%{ border-color:transparent; }
+  50%{ border-color:var(--accent-secondary); }
 }
 
 .heroStats{
@@ -1935,6 +1948,14 @@ body.dark .authForm{
   transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow:0 4px 12px rgba(230, 57, 70, 0.3);
   position:relative;
+}
+
+#userIconBtn.has-avatar{
+  background-color:transparent;
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:cover;
+  color:transparent;
 }
 
 #userIconBtn.hidden{

@@ -229,6 +229,18 @@ async function getUserData(uid) {
 
 async function updateUserProfile(uid, data) {
   try {
+    const userRef = doc(db, "users", uid);
+    const userSnap = await getDoc(userRef);
+
+    if (userSnap.exists()) {
+      await updateDoc(userRef, {
+        ...data,
+        updatedAt: serverTimestamp(),
+      });
+      return true;
+    }
+
+    // Fallback for legacy records that used a different doc id
     const q = query(collection(db, "users"), where("uid", "==", uid));
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
@@ -239,7 +251,18 @@ async function updateUserProfile(uid, data) {
       });
       return true;
     }
-    return false;
+
+    // If no doc exists, create it with merge
+    await setDoc(
+      userRef,
+      {
+        uid,
+        ...data,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+    return true;
   } catch (error) {
     console.error("Error updating user profile:", error);
     return false;

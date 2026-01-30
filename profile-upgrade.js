@@ -22,6 +22,12 @@ function escapeHTML(s) {
   }[m]));
 }
 
+function appendCacheBuster(url) {
+  if (!url) return url;
+  const sep = url.includes("?") ? "&" : "?";
+  return `${url}${sep}v=${Date.now()}`;
+}
+
 function showNotification(msg, type = "info") {
   const el = document.createElement("div");
   el.className = `pf-notice pf-${type}`;
@@ -56,8 +62,9 @@ export async function renderProfileModalFancy() {
     .toUpperCase()
     .substring(0, 2);
 
-  const avatarHtml = me.profilePic
-    ? `<img src="${escapeHTML(me.profilePic)}" alt="avatar" class="pf-avatarImg"/>`
+  const avatarUrl = me.profilePic ? appendCacheBuster(me.profilePic) : "";
+  const avatarHtml = avatarUrl
+    ? `<img src="${escapeHTML(avatarUrl)}" alt="avatar" class="pf-avatarImg"/>`
     : `<div class="pf-avatarInitials">${initials}</div>`;
 
   const html = `
