@@ -82,26 +82,14 @@ function showNotification(message, type = "info") {
   const notification = document.createElement("div");
   notification.className = `notification notification-${type}`;
   notification.textContent = message;
-  notification.style.cssText = `
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    padding: 12px 16px;
-    background: var(--card);
-    border: 2px solid ${type === "success" ? "var(--accent-success)" : "var(--accent-primary)"};
-    border-radius: 8px;
-    color: var(--text);
-    font-size: 14px;
-    z-index: 10000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    animation: slideIn 0.3s ease;
-  `;
+  notification.setAttribute('role', 'alert');
+  notification.setAttribute('aria-live', 'polite');
   document.body.appendChild(notification);
 
   setTimeout(() => {
-    notification.style.animation = "slideOut 0.3s ease";
+    notification.style.animation = "notificationSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
     setTimeout(() => notification.remove(), 300);
-  }, 3000);
+  }, 4000);
 }
 
 // In-app notification center (simple, client-side)
@@ -109,21 +97,31 @@ const APP_NOTIFICATIONS = [];
 function renderNotifBadge() {
   const n = APP_NOTIFICATIONS.length;
   if (!notifBadge) return;
-  notifBadge.textContent = String(n);
-  if (n === 0) notifBadge.classList.add("hidden");
-  else notifBadge.classList.remove("hidden");
+  
+  if (n === 0) {
+    notifBadge.classList.add("hidden");
+  } else {
+    notifBadge.classList.remove("hidden");
+    notifBadge.textContent = n > 99 ? "99+" : String(n);
+    notifBadge.title = `${n} notification${n !== 1 ? "s" : ""}`;
+    // Add bounce animation for new notifications
+    notifBadge.style.animation = "none";
+    setTimeout(() => {
+      notifBadge.style.animation = "badgePulse 0.6s ease";
+    }, 10);
+  }
 }
 
 function renderNotifPanel() {
   if (!notifList) return;
   if (APP_NOTIFICATIONS.length === 0) {
     notifList.innerHTML =
-      '<div style="color:var(--secondary);padding:8px;text-align:center">No notifications</div>';
+      '<div style="color:var(--secondary);padding:12px;text-align:center;font-style:italic">No notifications</div>';
     return;
   }
   notifList.innerHTML = APP_NOTIFICATIONS.map(
-    (n) =>
-      `<div style="padding:8px;border-bottom:1px solid var(--border)"><div style="font-weight:700">${escapeHTML(n.title)}</div><div style="font-size:13px;color:var(--secondary)">${escapeHTML(n.text)}</div></div>`,
+    (n, index) =>
+      `<div style="animation:slideInUp ${0.3 + index * 0.05}s ease forwards"><div style="font-weight:700;color:var(--accent-primary);margin-bottom:4px;font-size:14px">${escapeHTML(n.title)}</div><div style="font-size:13px;color:var(--secondary);line-height:1.5">${escapeHTML(n.text)}</div></div>`,
   ).join("");
 }
 
@@ -136,19 +134,40 @@ window.pushAppNotification = function (title, text) {
 
 if (notifBtn) {
   notifBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
     notifPanel.classList.toggle("hidden");
     notifPanel.setAttribute(
       "aria-hidden",
       notifPanel.classList.contains("hidden"),
     );
+    userMenu.classList.add("hidden");
+    userMenu.setAttribute("aria-hidden", "true");
   });
 }
+
+// Close notification panel when clicking outside
+document.addEventListener("click", (e) => {
+  if (notifBtn && notifPanel && !notifBtn.contains(e.target) && !notifPanel.contains(e.target)) {
+    notifPanel.classList.add("hidden");
+    notifPanel.setAttribute("aria-hidden", "true");
+  }
+  if (userIconBtn && userMenu && !userIconBtn.contains(e.target) && !userMenu.contains(e.target)) {
+    userMenu.classList.add("hidden");
+    userMenu.setAttribute("aria-hidden", "true");
+  }
+});
 
 if (clearNotifs) {
   clearNotifs.addEventListener("click", () => {
     APP_NOTIFICATIONS.length = 0;
     renderNotifBadge();
     renderNotifPanel();
+    showNotification("All notifications cleared!", "info");
+    // Close notification panel
+    if (notifPanel) {
+      notifPanel.classList.add("hidden");
+      notifPanel.setAttribute("aria-hidden", "true");
+    }
   });
 }
 
@@ -274,25 +293,145 @@ onAuthStateChange(async (firebaseUser) => {
   if (firebaseUser) {
     currentUserData = await getUserData(firebaseUser.uid);
     updateTopbar();
+    await renderFeaturedPosts();
     await renderPosts();
   } else {
     currentUserData = null;
     updateTopbar();
   }
+  
+  // Setup filters and search
+  setupFilterButtons();
+  setupSearchInput();
+  
+  // Initial render
+  if (allPosts.length === 0) {
+    await renderFeaturedPosts();
+    await renderPosts();
+  }
 });
+
+// ============================================
+// Filter & Search Functionality
+// ============================================
+let allPosts = [];
+let currentFilter = "all";
+
+async function filterAndSearchPosts() {
+  let filteredPosts = allPosts;
+  
+  // Apply category filter
+  if (currentFilter !== "all") {
+    filteredPosts = filteredPosts.filter(post => post.category === currentFilter);
+  }
+  
+  // Apply search filter
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput && searchInput.value.trim()) {
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    filteredPosts = filteredPosts.filter(post => 
+      post.title.toLowerCase().includes(searchTerm) ||
+      (post.excerpt || post.content).toLowerCase().includes(searchTerm) ||
+      (post.tags || []).some(tag => tag.toLowerCase().includes(searchTerm))
+    );
+  }
+  
+  // Add loading animation
+  if (postsRoot) {
+    postsRoot.style.opacity = "0.5";
+  }
+  
+  await renderPosts(filteredPosts);
+  
+  // Remove loading animation
+  if (postsRoot) {
+    postsRoot.style.opacity = "1";
+  }
+}
+
+// Setup filter button listeners
+function setupFilterButtons() {
+  const filterBtns = document.querySelectorAll(".filterBtn");
+  filterBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      filterBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentFilter = btn.dataset.category || "all";
+      filterAndSearchPosts();
+    });
+  });
+}
+
+// Setup search input listener
+function setupSearchInput() {
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      filterAndSearchPosts();
+    });
+  }
+}
+
+// Render featured posts
+async function renderFeaturedPosts() {
+  const featuredPosts = document.getElementById("featuredPosts");
+  if (!featuredPosts) return;
+  
+  let posts = await getPublishedPosts();
+  const topPosts = posts
+    .sort((a, b) => (b.likes || 0) - (a.likes || 0))
+    .slice(0, 3);
+  
+  if (topPosts.length === 0) {
+    featuredPosts.innerHTML = "";
+    return;
+  }
+  
+  featuredPosts.innerHTML = `<h2>✨ Featured Stories</h2><div class="featuredGrid"></div>`;
+  const grid = featuredPosts.querySelector(".featuredGrid");
+  
+  for (const post of topPosts) {
+    const card = document.createElement("article");
+    card.className = "post card featured";
+    card.style.cursor = "pointer";
+    
+    const categoryIcon =
+      post.category === "Novel" ? "📖" : post.category === "Poem" ? "✍️" : "📝";
+    
+    card.innerHTML = `
+      <div class="postHeader">
+        <h4 class="postTitle">${escapeHTML(post.title)}</h4>
+        <div class="postMeta" style="flex-wrap: wrap;">
+          ${post.category ? `<span class="moodTag" style="background:rgba(67,123,157,0.15);color:#457b9d">${categoryIcon} ${post.category}</span>` : ""}
+          <span style="margin-top:8px">👁️ ${post.views || 0} · ♥ ${post.likes || 0}</span>
+        </div>
+      </div>
+      <p style="color:var(--text);line-height:1.6;margin:12px 0;font-size:13px">
+        ${escapeHTML((post.excerpt || post.content).substring(0, 80))}...
+      </p>
+    `;
+    
+    grid.appendChild(card);
+  }
+}
 
 // ============================================
 // Render Posts
 // ============================================
-async function renderPosts() {
-  let posts = await getPublishedPosts();
+async function renderPosts(postsToRender = null) {
+  if (postsToRender === null) {
+    allPosts = await getPublishedPosts();
+    postsToRender = allPosts;
+  }
+
+  let posts = postsToRender;
 
   if (posts.length === 0) {
     postsRoot.innerHTML = `
       <div style="text-align:center;padding:60px 20px;color:var(--secondary)">
         <div style="font-size:48px;margin-bottom:16px">📚</div>
-        <h2 style="margin:0 0 12px 0;color:var(--text);font-size:24px">No Stories Yet</h2>
-        <p style="margin:0;font-size:15px">Stories will appear here once published.</p>
+        <h2 style="margin:0 0 12px 0;color:var(--text);font-size:24px">${currentFilter === "all" ? "No Stories Yet" : "No Stories Found"}</h2>
+        <p style="margin:0;font-size:15px">${currentFilter === "all" ? "Stories will appear here once published." : `No ${currentFilter}s match your filter.`}</p>
       </div>
     `;
     return;
