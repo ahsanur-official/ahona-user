@@ -16,6 +16,8 @@ import {
   isPostLikedByUser,
   addComment,
   getPostComments,
+  savePostForUser,
+  unsavePostForUser,
   saveDraft,
   updateDraft,
   getUserDrafts,
@@ -39,6 +41,9 @@ const userArea = document.getElementById("userArea");
 const userMenu = document.getElementById("userMenu");
 const currentUserName = document.getElementById("currentUserName");
 const profileBtn = document.getElementById("profileBtn");
+const draftsBtn = document.getElementById("draftsBtn");
+const likesBtn = document.getElementById("likesBtn");
+const settingsBtn = document.getElementById("settingsBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const profileModal = document.getElementById("profileModal");
 const closeProfile = document.getElementById("closeProfile");
@@ -89,7 +94,7 @@ function showNotification(message, type = "info") {
   setTimeout(() => {
     notification.style.animation = "notificationSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
     setTimeout(() => notification.remove(), 300);
-  }, 4000);
+  }, 500);
 }
 
 // In-app notification center (simple, client-side)
@@ -117,7 +122,6 @@ function renderNotifPanel() {
   if (APP_NOTIFICATIONS.length === 0) {
     notifList.innerHTML =
       '<div style="color:var(--secondary);padding:12px;text-align:center;font-style:italic">No notifications</div>';
-    return;
   }
   notifList.innerHTML = APP_NOTIFICATIONS.map(
     (n, index) =>
@@ -293,8 +297,6 @@ onAuthStateChange(async (firebaseUser) => {
   if (firebaseUser) {
     currentUserData = await getUserData(firebaseUser.uid);
     updateTopbar();
-    await renderFeaturedPosts();
-    await renderPosts();
   } else {
     currentUserData = null;
     updateTopbar();
@@ -424,7 +426,20 @@ async function renderPosts(postsToRender = null) {
     postsToRender = allPosts;
   }
 
+  if (postsToRender === null) {
+    allPosts = await getPublishedPosts();
+    postsToRender = allPosts;
+  }
+
   let posts = postsToRender;
+  // Deduplicate by id to avoid duplicate cards
+  const seen = new Set();
+  posts = posts.filter((p) => {
+    if (!p || !p.id) return true;
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
 
   if (posts.length === 0) {
     postsRoot.innerHTML = `
@@ -451,6 +466,10 @@ async function renderPosts(postsToRender = null) {
     if (auth.currentUser) {
       isLiked = await isPostLikedByUser(post.id, auth.currentUser.uid);
     }
+
+    // Check if user saved this post
+    const savedList = currentUserData?.savedPosts || [];
+    let isSaved = auth.currentUser ? savedList.includes(post.id) : false;
 
     // Get comments (support threaded comments with parentId)
     const comments = await getPostComments(post.id);
@@ -496,6 +515,16 @@ async function renderPosts(postsToRender = null) {
         </div>`
         : "";
 
+    const fullTextRaw = post.content || post.excerpt || "";
+    const plainText =
+      new DOMParser().parseFromString(fullTextRaw, "text/html").body
+        .textContent || "";
+    const fullText = escapeHTML(plainText).replace(/\n/g, "<br>");
+    const shortText =
+      escapeHTML(plainText).substring(0, 150) +
+      (plainText.length > 150 ? "..." : "");
+    const showMore = plainText.length > 150;
+
     el.innerHTML = `
       <div class="postHeader">
         <h3 class="postTitle">${escapeHTML(post.title)}</h3>
@@ -508,9 +537,10 @@ async function renderPosts(postsToRender = null) {
       </div>
 
       <div class="postContent">
-        <p style="color:var(--text);line-height:1.6;margin:12px 0">
-          ${escapeHTML((post.excerpt || post.content).substring(0, 150))}...
+        <p class="postContentText" data-expanded="false" style="color:var(--text);line-height:1.6;margin:12px 0">
+          ${shortText}
         </p>
+        ${showMore ? `<span class="readMore" role="button" aria-expanded="false">More</span>` : ""}
       </div>
 
       ${tagsHTML}
@@ -519,6 +549,10 @@ async function renderPosts(postsToRender = null) {
         <button class="likeBtn ${isLiked ? "liked" : ""}" data-post-id="${post.id}" data-like="${isLiked}">
           <span class="heart">♥</span>
           <span class="count">${post.likes || 0}</span>
+        </button>
+        <button class="saveBtn ${isSaved ? "saved" : ""}" data-post-id="${post.id}" data-saved="${isSaved}">
+          <span>🔖</span>
+          <span>${isSaved ? "Saved" : "Save"}</span>
         </button>
         <div class="postMeta">
           <span>👁️ ${post.views || 0} · ⏱️ ${post.readingTime || 1} min · 💬 ${comments.length}</span>
@@ -538,6 +572,34 @@ async function renderPosts(postsToRender = null) {
     `;
 
     postsRoot.appendChild(el);
+
+    const readMoreBtn = el.querySelector(".readMore");
+    const contentText = el.querySelector(".postContentText");
+    if (readMoreBtn && contentText) {
+      const shortHtml = shortText;
+      const fullHtml = fullText;
+      readMoreBtn.addEventListener("click", () => {
+        const expanded = contentText.dataset.expanded === "true";
+        if (expanded) {
+          contentText.innerHTML = shortHtml;
+          contentText.dataset.expanded = "false";
+          contentText.parentElement.classList.remove("expanded");
+          readMoreBtn.textContent = "More";
+          readMoreBtn.setAttribute("aria-expanded", "false");
+          const backTo = Number(contentText.dataset.scrollTop || 0);
+          if (Number.isFinite(backTo)) {
+            window.scrollTo({ top: backTo, behavior: "smooth" });
+          }
+        } else {
+          contentText.dataset.scrollTop = String(window.scrollY);
+          contentText.innerHTML = fullHtml;
+          contentText.dataset.expanded = "true";
+          contentText.parentElement.classList.add("expanded");
+          readMoreBtn.textContent = "Less";
+          readMoreBtn.setAttribute("aria-expanded", "true");
+        }
+      });
+    }
 
     // Like button handler
     el.querySelector(".likeBtn").addEventListener("click", async () => {
@@ -566,6 +628,51 @@ async function renderPosts(postsToRender = null) {
 
       await renderPosts();
     });
+
+    // Save button handler
+    const saveBtn = el.querySelector(".saveBtn");
+    if (saveBtn) {
+      saveBtn.addEventListener("click", async () => {
+        if (!auth.currentUser) {
+          showNotification("Please log in to save", "error");
+          return;
+        }
+
+        const postId = saveBtn.dataset.postId;
+        const currentlySaved = saveBtn.dataset.saved === "true";
+
+        if (currentlySaved) {
+          const ok = await unsavePostForUser(auth.currentUser.uid, postId);
+          if (ok) {
+            saveBtn.dataset.saved = "false";
+            saveBtn.classList.remove("saved");
+            saveBtn.querySelector("span:last-child").textContent = "Save";
+            currentUserData.savedPosts = (currentUserData.savedPosts || []).filter(
+              (id) => id !== postId,
+            );
+            if (window.pushAppNotification)
+              window.pushAppNotification("Saved", "Removed from saved");
+          } else {
+            showNotification("Failed to unsave", "error");
+          }
+        } else {
+          const ok = await savePostForUser(auth.currentUser.uid, postId);
+          if (ok) {
+            saveBtn.dataset.saved = "true";
+            saveBtn.classList.add("saved");
+            saveBtn.querySelector("span:last-child").textContent = "Saved";
+            currentUserData.savedPosts = [
+              ...(currentUserData.savedPosts || []),
+              postId,
+            ];
+            if (window.pushAppNotification)
+              window.pushAppNotification("Saved", "Post saved to your list");
+          } else {
+            showNotification("Failed to save", "error");
+          }
+        }
+      });
+    }
 
     // Comment form handler
     el.querySelector(".commentForm").addEventListener("submit", async (e) => {
@@ -731,15 +838,20 @@ registerForm.addEventListener("submit", async (e) => {
 // ============================================
 // User Menu
 // ============================================
-userIconBtn.addEventListener("click", () => {
-  userMenu.classList.toggle("hidden");
-});
-
-document.addEventListener("click", (e) => {
-  if (!userIconBtn.contains(e.target) && !userMenu.contains(e.target)) {
-    userMenu.classList.add("hidden");
-  }
-});
+if (userIconBtn) {
+  userIconBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    userMenu.classList.toggle("hidden");
+    userMenu.setAttribute(
+      "aria-hidden",
+      userMenu.classList.contains("hidden"),
+    );
+    if (notifPanel) {
+      notifPanel.classList.add("hidden");
+      notifPanel.setAttribute("aria-hidden", "true");
+    }
+  });
+}
 
 profileBtn.addEventListener("click", async () => {
   if (!auth.currentUser || !currentUserData) {
@@ -759,6 +871,64 @@ closeProfile.addEventListener("click", () => {
   profileModal.classList.add("hidden");
   document.body.classList.remove("modal-open");
 });
+
+if (draftsBtn) {
+  draftsBtn.addEventListener("click", async () => {
+    if (!auth.currentUser || !currentUserData) {
+      showNotification("Please log in to view drafts", "error");
+      return;
+    }
+    try {
+      await renderProfileModalFancy();
+      showNotification("Opening your drafts...", "info");
+    } catch (err) {
+      console.error(err);
+      showNotification("Unable to open drafts", "error");
+    }
+  });
+}
+
+if (likesBtn) {
+  likesBtn.addEventListener("click", async () => {
+    if (!auth.currentUser || !currentUserData) {
+      showNotification("Not signed in", "error");
+      return;
+    }
+    try {
+      await renderProfileModalFancy();
+      // Switch to Liked tab if available
+      setTimeout(() => {
+        const tabBtn = document.querySelector('.pf-tab[data-tab="posts"]');
+        if (tabBtn) tabBtn.click();
+        const likedBtn = document.getElementById('pf-showLiked');
+        if (likedBtn) likedBtn.click();
+      }, 100);
+    } catch (err) {
+      console.error(err);
+      showNotification("Unable to open likes", "error");
+    }
+  });
+}
+
+if (settingsBtn) {
+  settingsBtn.addEventListener("click", async () => {
+    if (!auth.currentUser || !currentUserData) {
+      showNotification("Not signed in", "error");
+      return;
+    }
+    try {
+      await renderProfileModalFancy();
+      // Switch to Settings tab if available
+      setTimeout(() => {
+        const tabBtn = document.querySelector('.pf-tab[data-tab="settings"]');
+        if (tabBtn) tabBtn.click();
+      }, 100);
+    } catch (err) {
+      console.error(err);
+      showNotification("Unable to open settings", "error");
+    }
+  });
+}
 
 // ============================================
 // About Author Modal
@@ -1082,7 +1252,10 @@ document.querySelectorAll(".modal").forEach((modal) => {
 initTypewriter();
 renderPosts();
 
-// ...existing code...
+  // ...existing code...
+
+// Expose renderPosts globally for profile modal navigation
+window.renderPosts = renderPosts;
 window.autoSave = (function () {
   let timer = null;
   let currentDraftId = null;

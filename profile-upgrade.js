@@ -70,12 +70,22 @@ export async function renderProfileModalFancy() {
   const html = `
     <div class="pf-grid">
       <div class="pf-left">
-        <div class="pf-avatarWrap">${avatarHtml}
-          <label class="pf-uploadBtn">Change
-            <input type="file" id="pf-avatarFile" accept="image/*" />
-          </label>
+        <div class="pf-hero">
+          <div class="pf-avatarWrap">${avatarHtml}
+            <label class="pf-uploadBtn">Change
+              <input type="file" id="pf-avatarFile" accept="image/*" />
+            </label>
+          </div>
+          <div class="pf-identity">
+            <h3 class="pf-name">${escapeHTML(me.displayName || auth.currentUser.email)}</h3>
+            <div class="pf-metaChips">
+              <span class="pf-chip">@${escapeHTML(me.username || "user")}</span>
+              <span class="pf-chip">${escapeHTML(auth.currentUser.email)}</span>
+              ${me.website ? `<a class="pf-chip pf-chip-link" href="${escapeHTML(me.website)}" target="_blank">${escapeHTML(me.website)}</a>` : ""}
+            </div>
+          </div>
         </div>
-        <h3 class="pf-name">${escapeHTML(me.displayName || auth.currentUser.email)}</h3>
+
         <p class="pf-bio">${escapeHTML(me.bio || "No bio yet. Tell people about yourself.")}</p>
 
         <div class="pf-stats">
@@ -86,6 +96,7 @@ export async function renderProfileModalFancy() {
 
         <div class="pf-actions">
           <button id="pf-editBtn" class="btn">Edit Profile</button>
+          <button id="pf-openPosts" class="btn btn-ghost">View Posts</button>
         </div>
       </div>
 
@@ -98,17 +109,29 @@ export async function renderProfileModalFancy() {
 
         <div class="pf-panel" id="pf-overview">
           <h4>About</h4>
-          <p><strong>Email:</strong> ${escapeHTML(auth.currentUser.email)}</p>
-          <p><strong>Username:</strong> ${escapeHTML(me.username || "-")}</p>
-          <p><strong>Website:</strong> ${me.website ? `<a href="${escapeHTML(me.website)}" target="_blank">${escapeHTML(me.website)}</a>` : "-"}</p>
+          <div class="pf-aboutGrid">
+            <div>
+              <div class="pf-label">Email</div>
+              <div class="pf-value">${escapeHTML(auth.currentUser.email)}</div>
+            </div>
+            <div>
+              <div class="pf-label">Username</div>
+              <div class="pf-value">${escapeHTML(me.username || "-")}</div>
+            </div>
+            <div>
+              <div class="pf-label">Website</div>
+              <div class="pf-value">${me.website ? `<a href="${escapeHTML(me.website)}" target="_blank">${escapeHTML(me.website)}</a>` : "-"}</div>
+            </div>
+          </div>
+          <div class="pf-quickActions">
+            <button class="btn btn-ghost" id="pf-showSaved">Saved</button>
+            <button class="btn btn-ghost" id="pf-showLiked">Liked</button>
+            <button class="btn btn-ghost" id="pf-showPublished">Published</button>
+          </div>
         </div>
 
         <div class="pf-panel hidden" id="pf-posts">
           <h4>Your posts</h4>
-          <div style="display:flex;gap:8px;margin-bottom:8px">
-            <button class="btn btn-ghost" id="pf-showSaved">Saved</button>
-            <button class="btn btn-ghost" id="pf-showLiked">Liked</button>
-          </div>
           <div class="pf-postList" id="pf-postList">
             ${posts.length === 0 ? '<div class="pf-empty">No published posts yet</div>' : posts.map(p => `
               <div class="pf-postItem" data-post-id="${p.id}">
@@ -142,7 +165,7 @@ export async function renderProfileModalFancy() {
         </div>
       </div>
 
-      <div style="padding-top:16px;border-top:2px solid var(--border);margin-top:16px">
+      <div class="pf-footer">
         <button id="pf-closeBtn" class="btn btn-ghost" style="width:100%">Close</button>
       </div>
     </div>
@@ -173,6 +196,7 @@ export async function renderProfileModalFancy() {
 
   // Edit flow
   const editBtn = container.querySelector("#pf-editBtn");
+  const openPostsBtn = container.querySelector("#pf-openPosts");
   const editForm = container.querySelector("#pf-editForm");
   const cancelEdit = container.querySelector("#pf-cancelEdit");
 
@@ -188,6 +212,14 @@ export async function renderProfileModalFancy() {
 
   editBtn.addEventListener("click", () => toggleEdit(true));
   cancelEdit.addEventListener("click", () => toggleEdit(false));
+  if (openPostsBtn) {
+    openPostsBtn.addEventListener("click", () => {
+      container.querySelectorAll(".pf-tab").forEach(b => b.classList.remove("active"));
+      container.querySelectorAll(".pf-panel").forEach(p => p.classList.add("hidden"));
+      container.querySelector('[data-tab="posts"]').classList.add("active");
+      container.querySelector("#pf-posts").classList.remove("hidden");
+    });
+  }
 
   // Avatar upload with client-side resize/compression
   const avatarFile = container.querySelector("#pf-avatarFile");
@@ -278,7 +310,6 @@ export async function renderProfileModalFancy() {
 
   async function showPublished() {
     btnPublished.classList.add('active'); btnSaved.classList.remove('active'); btnLiked.classList.remove('active');
-    // render original posts
     postListEl.innerHTML = `${posts.length === 0 ? '<div class="pf-empty">No published posts yet</div>' : posts.map(p => `
       <div class="pf-postItem" data-post-id="${p.id}">
         <div style="display:flex;justify-content:space-between;align-items:center">
@@ -292,6 +323,16 @@ export async function renderProfileModalFancy() {
         </div>
       </div>
     `).join('')}`;
+    // Add click handler to each post item
+    postListEl.querySelectorAll('.pf-postItem').forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.pf-saveBtn')) return; // Don't trigger on save btn
+        const postId = item.getAttribute('data-post-id');
+        if (window.loadAndScrollToPost) window.loadAndScrollToPost(postId);
+        document.getElementById('profileModal').classList.add('hidden');
+        document.body.classList.remove('modal-open');
+      });
+    });
     wireSaveButtons();
   }
 
@@ -316,6 +357,16 @@ export async function renderProfileModalFancy() {
         </div>
       </div>
     `).join('');
+    // Add click handler to each post item
+    postListEl.querySelectorAll('.pf-postItem').forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.pf-unstashBtn')) return; // Don't trigger on unsave btn
+        const postId = item.getAttribute('data-post-id');
+        if (window.loadAndScrollToPost) window.loadAndScrollToPost(postId);
+        document.getElementById('profileModal').classList.add('hidden');
+        document.body.classList.remove('modal-open');
+      });
+    });
     // wire unsave buttons
     postListEl.querySelectorAll('.pf-unstashBtn').forEach(b => {
       b.addEventListener('click', async () => {
@@ -353,7 +404,40 @@ export async function renderProfileModalFancy() {
         </div>
       </div>
     `).join('');
+    // Add click handler to each post item
+    postListEl.querySelectorAll('.pf-postItem').forEach(item => {
+      item.addEventListener('click', (e) => {
+        const postId = item.getAttribute('data-post-id');
+        if (window.loadAndScrollToPost) window.loadAndScrollToPost(postId);
+        document.getElementById('profileModal').classList.add('hidden');
+        document.body.classList.remove('modal-open');
+      });
+    });
   }
+// Expose a global function to load and scroll to a post by id
+if (!window.loadAndScrollToPost) {
+  window.loadAndScrollToPost = async function(postId) {
+    if (!postId) return;
+    // Try to find the post in the DOM
+    const postEl = document.querySelector(`[data-post-id='${postId}']`);
+    if (postEl) {
+      postEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      postEl.classList.add('highlight');
+      setTimeout(() => postEl.classList.remove('highlight'), 1200);
+      return;
+    }
+    // If not found, try to reload posts and scroll after render
+    if (window.renderPosts) {
+      await window.renderPosts();
+      const el = document.querySelector(`[data-post-id='${postId}']`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('highlight');
+        setTimeout(() => el.classList.remove('highlight'), 1200);
+      }
+    }
+  };
+}
 
   function wireSaveButtons(){
     postListEl.querySelectorAll('.pf-saveBtn').forEach(b => {

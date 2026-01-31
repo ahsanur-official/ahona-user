@@ -18,8 +18,18 @@
         <button id="userIconBtn" class="hidden" aria-label="User profile">👤</button>
         <div id="userMenu" class="userMenu hidden" aria-hidden="true">
           <div id="currentUserName"></div>
-          <button id="profileBtn">👤 Profile</button>
-          <button id="logoutBtn">🚪 Log out</button>
+          <div class="userMenuSection">
+            <button id="profileBtn">👤 Profile</button>
+          </div>
+          <div class="userMenuSection">
+            <button id="likesBtn">❤️ My Likes</button>
+          </div>
+          <div class="userMenuSection">
+            <button id="settingsBtn">⚙️ Settings</button>
+          </div>
+          <div class="userMenuSection">
+            <button id="logoutBtn">🚪 Log out</button>
+          </div>
         </div>
         <div id="notifPanel" class="userMenu hidden" aria-hidden="true">
           <div style="padding:12px 16px;font-weight:700;border-bottom:1px solid var(--border);background:linear-gradient(135deg, rgba(230, 57, 70, 0.05), rgba(69, 123, 157, 0.02));color:var(--accent-primary)">🔔 Notifications</div>
@@ -244,9 +254,15 @@
         <h3 class="footerBrand">📚 Ahona Islam</h3>
         <p class="footerDescription">A platform dedicated to sharing beautiful stories, poems, and literary works that inspire and connect readers worldwide.</p>
         <div class="footerSocials">
-          <a href="#" aria-label="Twitter" class="socialLink">𝕱</a>
-          <a href="#" aria-label="Instagram" class="socialLink">📷</a>
-          <a href="#" aria-label="Email" class="socialLink">✉️</a>
+          <a href="#" aria-label="Twitter" class="socialLink" target="_blank" rel="noopener">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M22.46 5.924c-.793.352-1.646.59-2.542.698a4.48 4.48 0 0 0 1.965-2.475 8.94 8.94 0 0 1-2.828 1.082A4.48 4.48 0 0 0 16.11 4c-2.48 0-4.49 2.015-4.49 4.5 0 .353.04.697.116 1.025C7.728 9.37 4.1 7.6 1.67 4.905a4.48 4.48 0 0 0-.61 2.264c0 1.563.796 2.944 2.01 3.755a4.47 4.47 0 0 1-2.034-.563v.057c0 2.183 1.553 4.004 3.617 4.42a4.5 4.5 0 0 1-2.027.077c.572 1.785 2.23 3.084 4.196 3.12A8.98 8.98 0 0 1 2 19.54a12.67 12.67 0 0 0 6.88 2.017c8.26 0 12.785-6.84 12.785-12.775 0-.195-.004-.39-.013-.583A9.22 9.22 0 0 0 24 4.59a8.98 8.98 0 0 1-2.54.697z" fill="#1DA1F2"/></svg>
+          </a>
+          <a href="#" aria-label="Instagram" class="socialLink" target="_blank" rel="noopener">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#fff"/><path d="M12 7.2A4.8 4.8 0 1 0 12 16.8 4.8 4.8 0 0 0 12 7.2zm0 7.8A3 3 0 1 1 12 9a3 3 0 0 1 0 6zm5.2-7.92a1.12 1.12 0 1 1-2.24 0 1.12 1.12 0 0 1 2.24 0zM12 5.2c1.3 0 1.45.005 1.96.028.5.022.77.1.95.17.23.09.39.2.56.37.17.17.28.33.37.56.07.18.15.45.17.95.023.51.028.66.028 1.96s-.005 1.45-.028 1.96c-.022.5-.1.77-.17.95a1.36 1.36 0 0 1-.37.56c-.17.17-.33.28-.56.37-.18.07-.45.15-.95.17-.51.023-.66.028-1.96.028s-1.45-.005-1.96-.028c-.5-.022-.77-.1-.95-.17a1.36 1.36 0 0 1-.56-.37 1.36 1.36 0 0 1-.37-.56c-.07-.18-.15-.45-.17-.95C5.205 13.45 5.2 13.3 5.2 12s.005-1.45.028-1.96c.022-.5.1-.77.17-.95.09-.23.2-.39.37-.56.17-.17.33-.28.56-.37.18-.07.45-.15.95-.17C10.55 5.205 10.7 5.2 12 5.2zm0-1.2C10.68 4 10.52 4.005 10.01 4.028c-.52.023-.88.1-1.19.21a2.56 2.56 0 0 0-.93.6 2.56 2.56 0 0 0-.6.93c-.11.31-.187.67-.21 1.19C4.005 10.52 4 10.68 4 12c0 1.32.005 1.48.028 1.99.023.52.1.88.21 1.19.13.32.31.6.6.93.29.29.61.47.93.6.31.11.67.187 1.19.21.51.023.67.028 1.99.028s1.48-.005 1.99-.028c.52-.023.88-.1 1.19-.21.32-.13.6-.31.93-.6.29-.29.47-.61.6-.93.11-.31.187-.67.21-1.19.023-.51.028-.67.028-1.99s-.005-1.48-.028-1.99c-.023-.52-.1-.88-.21-1.19a2.56 2.56 0 0 0-.6-.93 2.56 2.56 0 0 0-.93-.6c-.31-.11-.67-.187-1.19-.21C13.48 4.005 13.32 4 12 4z" fill="#E1306C"/></svg>
+          </a>
+          <a href="#" aria-label="Email" class="socialLink" target="_blank" rel="noopener">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#fff"/><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5v7A2.5 2.5 0 0 1 17.5 18h-11A2.5 2.5 0 0 1 4 15.5v-7zm2.5-.5a.5.5 0 0 0-.5.5v.217l6 3.75 6-3.75V8.5a.5.5 0 0 0-.5-.5h-11zm12 2.383-5.65 3.534a1 1 0 0 1-1.1 0L4.5 10.383V15.5a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-5.117z" fill="#1A73E8"/></svg>
+          </a>
         </div>
       </div>
       <div class="footerSection">
