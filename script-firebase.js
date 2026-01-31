@@ -482,17 +482,24 @@ async function renderPosts(postsToRender = null) {
     });
     function renderComment(c) {
       const replies = commentsByParent[c.id] || [];
+      // For demo: comment like count and liked state are stored in c.likes and c.likedByCurrentUser
+      const likeCount = c.likes || 0;
+      const isLiked = c.likedByCurrentUser || false;
       return `
         <div class="comment">
           <div class="commentName">${escapeHTML(c.userName)}</div>
           <div class="commentText">${escapeHTML(c.text)}</div>
+          <div class="commentActions">
+            <button class="commentLikeBtn${isLiked ? ' liked' : ''}" data-comment-id="${c.id}" data-liked="${isLiked}">♡</button>
+            <span class="commentLikeCount">${likeCount}</span>
+          </div>
           ${
             replies.length > 0
               ? `<div class="commentReplies">${replies
                   .slice(0, 2)
                   .map(
                     (r) => `
-            <div class="comment reply"><div class="commentName">${escapeHTML(r.userName)}</div><div class="commentText">${escapeHTML(r.text)}</div></div>
+            <div class="comment reply"><div class="commentName">${escapeHTML(r.userName)}</div><div class="commentText">${escapeHTML(r.text)}</div><div class="commentActions"><button class="commentLikeBtn" data-comment-id="${r.id}" data-liked="${r.likedByCurrentUser || false}">♡</button> <span class="commentLikeCount">${r.likes || 0}</span></div></div>
           `,
                   )
                   .join(
@@ -502,11 +509,18 @@ async function renderPosts(postsToRender = null) {
           }
         </div>`;
     }
-    const topComments = (commentsByParent[null] || []).slice(0, 3);
+    const allComments = commentsByParent[null] || [];
+    let showAll = false;
+    let commentsToShow = allComments;
+    let showAllBtnHTML = '';
+    if (allComments.length > 3) {
+      commentsToShow = allComments.slice(0, 3);
+      showAllBtnHTML = `<button class="showAllCommentsBtn">Show all comments (${allComments.length})</button>`;
+    }
     const commentsHTML =
-      topComments.length === 0
+      commentsToShow.length === 0
         ? '<div class="pf-empty">No comments yet</div>'
-        : topComments.map(renderComment).join("");
+        : commentsToShow.map(renderComment).join("");
 
     const tagsHTML =
       (post.tags || []).length > 0
@@ -563,6 +577,7 @@ async function renderPosts(postsToRender = null) {
         <div class="commentList">
           ${commentsHTML}
         </div>
+        ${showAllBtnHTML}
         <form class="commentForm" data-post-id="${post.id}">
           ${auth.currentUser ? "" : `<input name="name" placeholder="Name (optional)"/>`}
           <textarea name="text" placeholder="Write a kind thought..."></textarea>
@@ -572,6 +587,37 @@ async function renderPosts(postsToRender = null) {
     `;
 
     postsRoot.appendChild(el);
+
+    // Add like handler for all comment like buttons
+    el.querySelectorAll('.commentLikeBtn').forEach(btn => {
+      const likeCount = btn.nextElementSibling;
+      btn.addEventListener('click', function() {
+        const isLiked = btn.dataset.liked === 'true';
+        let count = parseInt(likeCount.textContent) || 0;
+        // Instant UI update
+        if (isLiked) {
+          btn.dataset.liked = 'false';
+          btn.classList.remove('liked');
+          count = Math.max(0, count - 1);
+        } else {
+          btn.dataset.liked = 'true';
+          btn.classList.add('liked');
+          count = count + 1;
+        }
+        likeCount.textContent = String(count);
+        // TODO: Sync with backend (addCommentLike/unlikeCommentLike)
+      });
+    });
+
+    // Show all comments button handler
+    if (allComments.length > 3) {
+      const showAllBtn = el.querySelector('.showAllCommentsBtn');
+      const commentList = el.querySelector('.commentList');
+      showAllBtn.addEventListener('click', () => {
+        commentList.innerHTML = allComments.map(renderComment).join('');
+        showAllBtn.remove();
+      });
+    }
 
     const readMoreBtn = el.querySelector(".readMore");
     const contentText = el.querySelector(".postContentText");
@@ -611,22 +657,47 @@ async function renderPosts(postsToRender = null) {
       const btn = el.querySelector(".likeBtn");
       const postId = btn.dataset.postId;
       const isCurrentlyLiked = btn.dataset.like === "true";
+      const countSpan = btn.querySelector(".count");
+      let count = parseInt(countSpan.textContent) || 0;
 
+      // Instant UI update
       if (isCurrentlyLiked) {
-        await unlikePost(postId, auth.currentUser.uid);
         btn.dataset.like = "false";
         btn.classList.remove("liked");
-        if (window.pushAppNotification)
-          window.pushAppNotification("Interaction", "You unliked a post");
+        count = Math.max(0, count - 1);
+        countSpan.textContent = String(count);
       } else {
-        await likePost(postId, auth.currentUser.uid);
         btn.dataset.like = "true";
         btn.classList.add("liked");
-        if (window.pushAppNotification)
-          window.pushAppNotification("Interaction", "You liked a post");
+        count = count + 1;
+        countSpan.textContent = String(count);
       }
 
-      await renderPosts();
+      // Sync with backend
+      try {
+        if (isCurrentlyLiked) {
+          await unlikePost(postId, auth.currentUser.uid);
+          if (window.pushAppNotification)
+            window.pushAppNotification("Interaction", "You unliked a post");
+        } else {
+          await likePost(postId, auth.currentUser.uid);
+          if (window.pushAppNotification)
+            window.pushAppNotification("Interaction", "You liked a post");
+        }
+      } catch (err) {
+        // Revert UI if backend fails
+        if (isCurrentlyLiked) {
+          btn.dataset.like = "true";
+          btn.classList.add("liked");
+          count = count + 1;
+        } else {
+          btn.dataset.like = "false";
+          btn.classList.remove("liked");
+          count = Math.max(0, count - 1);
+        }
+        countSpan.textContent = String(count);
+        showNotification("Failed to update like. Please try again.", "error");
+      }
     });
 
     // Save button handler
@@ -686,11 +757,28 @@ async function renderPosts(postsToRender = null) {
 
       if (!text) return;
 
-      await addComment(postId, auth.currentUser?.uid || "", name, text);
+      // Instant UI update
+      const commentList = el.querySelector('.commentList');
+      const tempId = 'temp-' + Date.now();
+      const tempComment = document.createElement('div');
+      tempComment.className = 'comment';
+      tempComment.dataset.temp = tempId;
+      tempComment.innerHTML = `<div class="commentName">${escapeHTML(name)}</div><div class="commentText">${escapeHTML(text)}</div>`;
+      commentList.appendChild(tempComment);
       form.reset();
-      if (window.pushAppNotification)
-        window.pushAppNotification("Comment", "Your comment was posted");
-      await renderPosts();
+
+      // Sync with backend
+      try {
+        await addComment(postId, auth.currentUser?.uid || "", name, text);
+        if (window.pushAppNotification)
+          window.pushAppNotification("Comment", "Your comment was posted");
+        // Optionally, re-render or update comment with real data
+        await renderPosts();
+      } catch (err) {
+        // Remove temp comment if backend fails
+        tempComment.remove();
+        showNotification("Failed to post comment. Please try again.", "error");
+      }
     });
 
     // Increment view on scroll into view
