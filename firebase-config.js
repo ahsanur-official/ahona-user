@@ -11,6 +11,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
+  browserLocalPersistence,
+  setPersistence,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import {
   getFirestore,
@@ -52,6 +54,8 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+// Ensure persistence is set before any auth usage
+await setPersistence(auth, browserLocalPersistence);
 const db = getFirestore(app);
 const storage = getStorage(app);
 

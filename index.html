@@ -1,3 +1,59 @@
+    <script>
+      // Prevent light flash on reload if dark mode is set
+      (function() {
+        try {
+          var settings = JSON.parse(localStorage.getItem('ahona_settings') || '{}');
+          if (settings.theme === 'dark') {
+            document.documentElement.classList.add('dark');
+            // body may not exist yet, so use a MutationObserver
+            var observer = new MutationObserver(function() {
+              if (document.body) {
+                document.body.classList.add('dark');
+                observer.disconnect();
+              }
+            });
+            observer.observe(document.documentElement, {childList:true, subtree:true});
+          }
+        } catch(e) {}
+      })();
+    </script>
+  <!-- Auth Loading Spinner -->
+  <div id="authLoadingSpinner" style="position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;z-index:9999;background:rgba(30,34,40,0.65);transition:opacity 0.3s;">
+      <style>
+        body:not(.dark) #authLoadingSpinner {
+          background: rgba(255,255,255,0.75) !important;
+        }
+        body.dark #authLoadingSpinner {
+          background: rgba(30,34,40,0.85) !important;
+        }
+      </style>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:18px;">
+      <div class="lds-dual-ring"></div>
+      <span style="color:var(--accent-tertiary);font-size:18px;font-weight:600;">Loading...</span>
+    </div>
+  </div>
+  <style>
+    .lds-dual-ring {
+      display: inline-block;
+      width: 64px;
+      height: 64px;
+    }
+    .lds-dual-ring:after {
+      content: " ";
+      display: block;
+      width: 46px;
+      height: 46px;
+      margin: 1px;
+      border-radius: 50%;
+      border: 6px solid var(--accent-tertiary);
+      border-color: var(--accent-tertiary) transparent var(--accent-primary) transparent;
+      animation: lds-dual-ring 1.2s linear infinite;
+    }
+    @keyframes lds-dual-ring {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 <!doctype html>
 <html lang="en">
 <head>
@@ -10,6 +66,7 @@
   <header class="topBar">
     <div class="brand">Ahona Islam</div>
     <div class="controls">
+        <button id="langToggleBtn" style="margin-left:8px;padding:7px 16px;border-radius:8px;background:linear-gradient(90deg,#457b9d,#e63946);color:#fff;font-weight:600;border:none;cursor:pointer;">বাংলা</button>
       <button id="toggleTheme" aria-label="Toggle dark mode">☀️</button>
       <button id="notifBtn" aria-label="Notifications" class="notifBtn">🔔<span id="notifBadge" class="notifBadge hidden">0</span></button>
       <div class="userArea" id="userArea">

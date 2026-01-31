@@ -1,4 +1,14 @@
 // ============================================
+// Preserve scroll position on reload
+window.addEventListener('beforeunload', () => {
+  localStorage.setItem('scrollY', window.scrollY);
+});
+window.addEventListener('DOMContentLoaded', () => {
+  const y = parseInt(localStorage.getItem('scrollY'), 10);
+  if (!isNaN(y)) {
+    setTimeout(() => window.scrollTo(0, y), 50);
+  }
+});
 // AHONA BLOG - USER PANEL (Firebase Ready)
 // ============================================
 import {
@@ -59,6 +69,61 @@ const clearNotifs = document.getElementById("clearNotifs");
 // ============================================
 let currentUserData = null;
 const SETTINGS_KEY = "ahona_settings";
+let authLoading = true;
+let LANG_KEY = 'ahona_lang';
+let currentLang = localStorage.getItem(LANG_KEY) || 'en';
+
+const translations = {
+  en: {
+    welcome: "Welcome to the Ahona Islam's Stories World..",
+    discover: "Discover beautiful novels, poems, and short stories crafted with passion",
+    loading: "Loading...",
+    commentPlaceholder: "Write a kind thought...",
+    commentBtn: "Comment",
+    comments: "Comments",
+    login: "Log in",
+    register: "Register",
+    // ...add more as needed
+  },
+  bn: {
+    welcome: "আহোনা ইসলামের গল্পের জগতে স্বাগতম..",
+    discover: "ভালবাসা দিয়ে গড়া উপন্যাস, কবিতা ও ছোট গল্প আবিষ্কার করুন",
+    loading: "লোড হচ্ছে...",
+    commentPlaceholder: "একটি সুন্দর মন্তব্য লিখুন...",
+    commentBtn: "মন্তব্য",
+    comments: "মন্তব্যসমূহ",
+    login: "লগইন",
+    register: "রেজিস্টার",
+    // ...add more as needed
+  }
+};
+
+function t(key) {
+  return translations[currentLang][key] || translations['en'][key] || key;
+}
+
+function updateLangUI() {
+  // Example: update main welcome text, comment placeholders, etc.
+  const welcome = document.getElementById('mainWelcomeText');
+  if (welcome) welcome.textContent = t('welcome');
+  const discover = document.getElementById('mainDiscoverText');
+  if (discover) discover.textContent = t('discover');
+  document.querySelectorAll('.commentForm textarea').forEach(el => el.placeholder = t('commentPlaceholder'));
+  document.querySelectorAll('.commentForm button[type="submit"]').forEach(el => el.textContent = t('commentBtn'));
+  document.querySelectorAll('.openCommentsBtn').forEach(el => el.textContent = t('comments'));
+  const langBtn = document.getElementById('langToggleBtn');
+  if (langBtn) langBtn.textContent = currentLang === 'en' ? 'বাংলা' : 'English';
+  // Add more as needed
+}
+
+document.getElementById('langToggleBtn')?.addEventListener('click', () => {
+  currentLang = currentLang === 'en' ? 'bn' : 'en';
+  localStorage.setItem(LANG_KEY, currentLang);
+  updateLangUI();
+  renderPosts(); // re-render posts/comments in new language
+});
+
+window.addEventListener('DOMContentLoaded', updateLangUI);
 
 // ============================================
 // Helpers
@@ -301,15 +366,23 @@ onAuthStateChange(async (firebaseUser) => {
     currentUserData = null;
     updateTopbar();
   }
-  
+  // Hide auth loading spinner
+  authLoading = false;
+  document.getElementById('authLoadingSpinner')?.remove();
+  // Show main UI (if you hide it by default, unhide here)
   // Setup filters and search
   setupFilterButtons();
   setupSearchInput();
-  
   // Initial render
   if (allPosts.length === 0) {
     await renderFeaturedPosts();
     await renderPosts();
+  }
+
+  // Restore scroll position after content is loaded
+  const y = parseInt(localStorage.getItem('scrollY'), 10);
+  if (!isNaN(y)) {
+    setTimeout(() => window.scrollTo(0, y), 50);
   }
 });
 
@@ -482,30 +555,31 @@ async function renderPosts(postsToRender = null) {
     });
     function renderComment(c) {
       const replies = commentsByParent[c.id] || [];
-      // For demo: comment like count and liked state are stored in c.likes and c.likedByCurrentUser
       const likeCount = c.likes || 0;
       const isLiked = c.likedByCurrentUser || false;
       return `
-        <div class="comment">
-          <div class="commentName">${escapeHTML(c.userName)}</div>
-          <div class="commentText">${escapeHTML(c.text)}</div>
-          <div class="commentActions">
-            <button class="commentLikeBtn${isLiked ? ' liked' : ''}" data-comment-id="${c.id}" data-liked="${isLiked}">♡</button>
-            <span class="commentLikeCount">${likeCount}</span>
+        <div class="commentBox${c.parentId ? ' reply' : ''}" style="background:${c.parentId ? 'var(--bg-secondary, #f7f7fa)' : 'var(--bg-primary, #fff)'};border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <div class="commentAvatar" style="width:32px;height:32px;border-radius:50%;background:#e3e3e3;display:flex;align-items:center;justify-content:center;font-weight:700;color:#457b9d;font-size:15px;">
+              ${escapeHTML((c.userName||'A').charAt(0).toUpperCase())}
+            </div>
+            <div style="flex:1;">
+              <span class="commentName" style="font-weight:600;color:#222;font-size:15px;">${escapeHTML(c.userName)}</span>
+              <span style="color:#aaa;font-size:12px;margin-left:8px;">${c.createdAt ? new Date(c.createdAt).toLocaleString() : ''}</span>
+            </div>
+          </div>
+          <div class="commentText" style="margin-bottom:10px;color:#333;font-size:14px;line-height:1.7;">${escapeHTML(c.text)}</div>
+          <div class="commentActions" style="display:flex;align-items:center;gap:12px;">
+            <button class="commentLikeBtn${isLiked ? ' liked' : ''}" data-comment-id="${c.id}" data-liked="${isLiked}" style="background:none;border:none;cursor:pointer;color:${isLiked ? '#e63946' : '#aaa'};font-size:16px;transition:color 0.2s;">♡</button>
+            <span class="commentLikeCount" style="font-size:13px;color:#888;">${likeCount}</span>
+            <button class="replyBtn" data-comment-id="${c.id}" style="background:none;border:none;cursor:pointer;color:#457b9d;font-size:13px;">Reply</button>
           </div>
           ${
             replies.length > 0
-              ? `<div class="commentReplies">${replies
-                  .slice(0, 2)
-                  .map(
-                    (r) => `
-            <div class="comment reply"><div class="commentName">${escapeHTML(r.userName)}</div><div class="commentText">${escapeHTML(r.text)}</div><div class="commentActions"><button class="commentLikeBtn" data-comment-id="${r.id}" data-liked="${r.likedByCurrentUser || false}">♡</button> <span class="commentLikeCount">${r.likes || 0}</span></div></div>
-          `,
-                  )
-                  .join(
-                    "",
-                  )}${replies.length > 2 ? `<div class="moreReplies">+${replies.length - 2} more</div>` : ""}</div>`
-              : ""
+              ? `<div class="commentReplies" style="margin-top:12px;padding-left:18px;border-left:2px solid #f0f0f0;">${replies
+                  .map(renderComment)
+                  .join('')}</div>`
+              : ''
           }
         </div>`;
     }
@@ -554,7 +628,7 @@ async function renderPosts(postsToRender = null) {
         <p class="postContentText" data-expanded="false" style="color:var(--text);line-height:1.6;margin:12px 0">
           ${shortText}
         </p>
-        ${showMore ? `<span class="readMore" role="button" aria-expanded="false">More</span>` : ""}
+        ${showMore ? `<span class="readMore" role="button" aria-expanded="false">${t('more') || 'More'}</span>` : ""}
       </div>
 
       ${tagsHTML}
@@ -568,25 +642,51 @@ async function renderPosts(postsToRender = null) {
           <span>🔖</span>
           <span>${isSaved ? "Saved" : "Save"}</span>
         </button>
+        <button class="openCommentsBtn" data-post-id="${post.id}">💬 ${t('comments')} (${comments.length})</button>
         <div class="postMeta">
-          <span>👁️ ${post.views || 0} · ⏱️ ${post.readingTime || 1} min · 💬 ${comments.length}</span>
+          <span>👁️ ${post.views || 0} · ⏱️ ${post.readingTime || 1} min</span>
         </div>
       </div>
 
-      <div class="comments" data-post-id="${post.id}">
-        <div class="commentList">
-          ${commentsHTML}
+      <div class="commentsModal modal hidden" id="commentsModal-${post.id}" aria-hidden="true">
+        <div class="modal-content">
+          <button class="closeCommentsModal" aria-label="Close">×</button>
+          <h3>${t('comments')}</h3>
+          <div class="commentList">
+            ${allComments.map(renderComment).join('')}
+          </div>
+          <form class="commentForm" data-post-id="${post.id}">
+            ${auth.currentUser ? "" : `<input name="name" placeholder="Name (optional)"/>`}
+            <textarea name="text" placeholder="${t('commentPlaceholder')}"></textarea>
+            <button type="submit">${t('commentBtn')}</button>
+          </form>
         </div>
-        ${showAllBtnHTML}
-        <form class="commentForm" data-post-id="${post.id}">
-          ${auth.currentUser ? "" : `<input name="name" placeholder="Name (optional)"/>`}
-          <textarea name="text" placeholder="Write a kind thought..."></textarea>
-          <button type="submit">Comment</button>
-        </form>
       </div>
     `;
 
     postsRoot.appendChild(el);
+
+    // Comments modal open/close logic
+    const openCommentsBtn = el.querySelector('.openCommentsBtn');
+    const commentsModal = el.querySelector('.commentsModal');
+    const closeCommentsModal = el.querySelector('.closeCommentsModal');
+    if (openCommentsBtn && commentsModal && closeCommentsModal) {
+      openCommentsBtn.addEventListener('click', () => {
+        commentsModal.classList.remove('hidden');
+        commentsModal.setAttribute('aria-hidden', 'false');
+      });
+      closeCommentsModal.addEventListener('click', () => {
+        commentsModal.classList.add('hidden');
+        commentsModal.setAttribute('aria-hidden', 'true');
+      });
+      // Optional: close modal on background click
+      commentsModal.addEventListener('click', (e) => {
+        if (e.target === commentsModal) {
+          commentsModal.classList.add('hidden');
+          commentsModal.setAttribute('aria-hidden', 'true');
+        }
+      });
+    }
 
     // Add like handler for all comment like buttons
     el.querySelectorAll('.commentLikeBtn').forEach(btn => {
