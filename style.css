@@ -191,18 +191,24 @@ body.dark .commentsModal .commentForm textarea {
   border-radius: 10px;
   padding: 14px 16px;
   margin-bottom: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  transition: background 0.3s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
   position: relative;
-  background: #fff;
-  border: 1px solid #e0e0e0;
+  background: #161b22 !important;
+  border: 1px solid #30363d !important;
+}
+.commentBox:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.5) !important;
+  border-color: #667eea !important;
+  background: linear-gradient(135deg, #1e2530 0%, #2a3140 100%) !important;
 }
 .commentBox.reply {
   margin-left: 32px;
-  background: #f9f9f9;
-  border: 1px solid #f0f0f0;
+  background: #161b22 !important;
+  border: 1px solid #30363d !important;
   border-left: 3px solid var(--accent-tertiary);
-  box-shadow: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 .commentAvatar {
   width: 32px;
@@ -276,14 +282,14 @@ body.dark .commentsModal .commentForm textarea {
   cursor: pointer;
 }
 body.dark .commentBox {
-  background: #1c1c1c !important;
+  background: #161b22 !important;
   color: #e0e0e0;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid #30363d !important;
 }
 body.dark .commentBox.reply {
-  background: #0d0d0d !important;
+  background: #161b22 !important;
   border-left: 3px solid var(--accent-tertiary);
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid #30363d !important;
   color: #e0e0e0;
 }
 body.dark .commentBox .commentName {
