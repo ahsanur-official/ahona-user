@@ -31,6 +31,8 @@ import {
   arrayUnion,
   arrayRemove,
   increment,
+  writeBatch,
+  limit,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import {
   getStorage,
@@ -703,6 +705,170 @@ async function getPostComments(postId) {
   }
 }
 
+// Like/Unlike comment functions
+async function likeComment(commentId, userId, userName) {
+  try {
+    // Add to commentLikes collection to track who liked
+    const likeRef = doc(db, "commentLikes", `${commentId}_${userId}`);
+    await setDoc(likeRef, {
+      commentId: commentId,
+      userId: userId,
+      createdAt: serverTimestamp(),
+    });
+
+    // Increment comment likes count
+    const commentRef = doc(db, "comments", commentId);
+    const commentSnap = await getDoc(commentRef);
+    
+    await updateDoc(commentRef, {
+      likes: increment(1),
+    });
+
+    // Create notification for comment author (if not liking own comment)
+    if (commentSnap.exists()) {
+      const commentData = commentSnap.data();
+      const commentAuthorId = commentData.userId;
+      
+      if (commentAuthorId && commentAuthorId !== userId) {
+        const notifRef = doc(collection(db, "notifications"));
+        await setDoc(notifRef, {
+          userId: commentAuthorId,
+          type: "comment_like",
+          commentId: commentId,
+          postId: commentData.postId,
+          fromUserId: userId,
+          fromUserName: userName || "Someone",
+          commentText: (commentData.text || "").substring(0, 50),
+          read: false,
+          createdAt: serverTimestamp(),
+        });
+      }
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error liking comment:", error);
+    return false;
+  }
+}
+
+async function unlikeComment(commentId, userId) {
+  try {
+    // Remove from commentLikes collection
+    const likeRef = doc(db, "commentLikes", `${commentId}_${userId}`);
+    await deleteDoc(likeRef);
+
+    // Decrement comment likes count
+    const commentRef = doc(db, "comments", commentId);
+    await updateDoc(commentRef, {
+      likes: increment(-1),
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error unliking comment:", error);
+    return false;
+  }
+}
+
+async function isCommentLikedByUser(commentId, userId) {
+  try {
+    const likeRef = doc(db, "commentLikes", `${commentId}_${userId}`);
+    const likeSnap = await getDoc(likeRef);
+    return likeSnap.exists();
+  } catch (error) {
+    console.error("Error checking comment like:", error);
+    return false;
+  }
+}
+
+// Get notifications for a user
+async function getUserNotifications(userId, maxResults = 20) {
+  try {
+    const q = query(
+      collection(db, "notifications"),
+      where("userId", "==", userId),
+      orderBy("createdAt", "desc"),
+      limit(maxResults)
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch (error) {
+    console.error("Error getting notifications:", error);
+    return [];
+  }
+}
+
+// Get unread notification count
+async function getUnreadNotificationCount(userId) {
+  try {
+    const q = query(
+      collection(db, "notifications"),
+      where("userId", "==", userId),
+      where("read", "==", false)
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.size;
+  } catch (error) {
+    console.error("Error getting unread count:", error);
+    return 0;
+  }
+}
+
+// Mark notification as read
+async function markNotificationAsRead(notificationId) {
+  try {
+    await updateDoc(doc(db, "notifications", notificationId), {
+      read: true,
+    });
+    return true;
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+    return false;
+  }
+}
+
+// Mark all notifications as read for a user
+async function markAllNotificationsAsRead(userId) {
+  try {
+    const q = query(
+      collection(db, "notifications"),
+      where("userId", "==", userId),
+      where("read", "==", false)
+    );
+    const snapshot = await getDocs(q);
+    const batch = writeBatch(db);
+    snapshot.docs.forEach((d) => {
+      batch.update(d.ref, { read: true });
+    });
+    await batch.commit();
+    return true;
+  } catch (error) {
+    console.error("Error marking all as read:", error);
+    return false;
+  }
+}
+
+// Delete all notifications for a user
+async function clearAllNotifications(userId) {
+  try {
+    const q = query(
+      collection(db, "notifications"),
+      where("userId", "==", userId)
+    );
+    const snapshot = await getDocs(q);
+    const batch = writeBatch(db);
+    snapshot.docs.forEach((d) => {
+      batch.delete(d.ref);
+    });
+    await batch.commit();
+    return true;
+  } catch (error) {
+    console.error("Error clearing notifications:", error);
+    return false;
+  }
+}
+
 // Allow comments with optional parentId for threaded replies
 async function addThreadedComment(postId, userId, userName, text, parentId = null) {
   try {
@@ -894,6 +1060,15 @@ export {
   getPostComments,
   deleteComment,
   addThreadedComment,
+  likeComment,
+  unlikeComment,
+  isCommentLikedByUser,
+  // Notifications
+  getUserNotifications,
+  getUnreadNotificationCount,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  clearAllNotifications,
   // Post images
   uploadPostImage,
   // Saved posts

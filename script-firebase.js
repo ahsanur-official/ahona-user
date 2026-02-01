@@ -26,11 +26,19 @@ import {
   isPostLikedByUser,
   addComment,
   getPostComments,
+  likeComment,
+  unlikeComment,
+  isCommentLikedByUser,
   savePostForUser,
   unsavePostForUser,
   saveDraft,
   updateDraft,
   getUserDrafts,
+  getUserNotifications,
+  getUnreadNotificationCount,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  clearAllNotifications,
 } from "../firebase-config.js";
 import { renderProfileModalFancy } from "./profile-upgrade.js";
 
@@ -173,6 +181,12 @@ const translations = {
     lastUpdated: "Last updated: January 2024",
     faqTitle: "Frequently Asked Questions",
     popularTagsTitle: "Popular Tags",
+    // Notifications
+    notifications: "Notifications",
+    clearAll: "Clear All",
+    noNotifications: "No notifications",
+    likedYourComment: "liked your comment",
+    markAllRead: "Mark all as read",
     // Terms of Service Modal
     termsTitle: "Terms of Service",
     userAgreementTitle: "1. User Agreement",
@@ -284,6 +298,13 @@ const translations = {
     cookiesText: "আমরা আপনার অভিজ্ঞতা বাড়াতে এবং আপনার পছন্দগুলি মনে রাখতে কুকিজ ব্যবহার করি। আপনি আপনার ব্রাউজারে কুকি সেটিংস পরিচালনা করতে পারেন।",
     lastUpdated: "সর্বশেষ আপডেট: জানুয়ারি ২০২২",
 
+    // Notifications
+    notifications: "বিজ্ঞপ্তি",
+    clearAll: "সব পরিষ্কার করুন",
+    noNotifications: "কোন বিজ্ঞপ্তি নেই",
+    likedYourComment: "আপনার মন্তব্য পছন্দ করেছেন",
+    markAllRead: "সব পঠিত চিহ্নিত করুন",
+
     // Terms of Service Modal
     termsTitle: "সেবার শর্তাবলী",
     userAgreementTitle: "১. ব্যবহারকারী চুক্তি",
@@ -390,6 +411,12 @@ document.getElementById('langToggleBtn')?.addEventListener('click', () => {
   
   renderPosts(); // re-render to update button labels
   
+  // Auto-hide user menu on mobile after language selection
+  if (userMenu && !userMenu.classList.contains('hidden')) {
+    userMenu.classList.add('hidden');
+    userMenu.setAttribute('aria-hidden', 'true');
+  }
+  
   // Update open modals
   const aboutModal = document.getElementById("aboutModal");
   if (aboutModal && !aboutModal.classList.contains("hidden")) {
@@ -455,16 +482,35 @@ function showNotification(message, type = "info") {
 
 // In-app notification center (simple, client-side)
 const APP_NOTIFICATIONS = [];
-function renderNotifBadge() {
-  const n = APP_NOTIFICATIONS.length;
+// ============================================
+// Notification System (Firebase-based)
+// ============================================
+async function loadNotifications() {
+  if (!auth.currentUser) {
+    renderNotifBadge(0);
+    renderNotifPanel([]);
+    return;
+  }
+  
+  try {
+    const notifications = await getUserNotifications(auth.currentUser.uid);
+    const unreadCount = notifications.filter(n => !n.read).length;
+    renderNotifBadge(unreadCount);
+    renderNotifPanel(notifications);
+  } catch (error) {
+    console.error("Error loading notifications:", error);
+  }
+}
+
+function renderNotifBadge(count) {
   if (!notifBadge) return;
   
-  if (n === 0) {
+  if (count === 0) {
     notifBadge.classList.add("hidden");
   } else {
     notifBadge.classList.remove("hidden");
-    notifBadge.textContent = n > 99 ? "99+" : String(n);
-    notifBadge.title = `${n} notification${n !== 1 ? "s" : ""}`;
+    notifBadge.textContent = count > 99 ? "99+" : String(count);
+    notifBadge.title = `${count} notification${count !== 1 ? "s" : ""}`;
     // Add bounce animation for new notifications
     notifBadge.style.animation = "none";
     setTimeout(() => {
@@ -473,28 +519,100 @@ function renderNotifBadge() {
   }
 }
 
-function renderNotifPanel() {
+function renderNotifPanel(notifications) {
   if (!notifList) return;
-  if (APP_NOTIFICATIONS.length === 0) {
-    notifList.innerHTML =
-      '<div style="color:var(--secondary);padding:12px;text-align:center;font-style:italic">No notifications</div>';
+  
+  if (notifications.length === 0) {
+    notifList.innerHTML = `<div style="color:var(--text-secondary);padding:20px;text-align:center;font-style:italic" data-i18n="noNotifications">${t("noNotifications")}</div>`;
+    return;
   }
-  notifList.innerHTML = APP_NOTIFICATIONS.map(
-    (n, index) =>
-      `<div style="animation:slideInUp ${0.3 + index * 0.05}s ease forwards"><div style="font-weight:700;color:var(--accent-primary);margin-bottom:4px;font-size:14px">${escapeHTML(n.title)}</div><div style="font-size:13px;color:var(--secondary);line-height:1.5">${escapeHTML(n.text)}</div></div>`,
-  ).join("");
+  
+  notifList.innerHTML = notifications.map((n, index) => {
+    const isUnread = !n.read;
+    let icon = "💬";
+    let message = "";
+    let timeAgo = "";
+    
+    if (n.createdAt) {
+      try {
+        const date = n.createdAt.toDate ? n.createdAt.toDate() : new Date(n.createdAt);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        if (diffMins < 1) timeAgo = "Just now";
+        else if (diffMins < 60) timeAgo = `${diffMins}m ago`;
+        else if (diffHours < 24) timeAgo = `${diffHours}h ago`;
+        else timeAgo = `${diffDays}d ago`;
+      } catch (e) {
+        timeAgo = "";
+      }
+    }
+    
+    if (n.type === "comment_like") {
+      icon = "♥";
+      message = `<strong>${escapeHTML(n.fromUserName)}</strong> <span data-i18n="likedYourComment">${t("likedYourComment")}</span>: "${escapeHTML((n.commentText || "").substring(0, 40))}${n.commentText && n.commentText.length > 40 ? "..." : ""}"`;
+    }
+    
+    return `
+      <div class="notifItem" data-notif-id="${n.id}" data-post-id="${n.postId}" style="
+        padding:12px;
+        margin-bottom:8px;
+        border-radius:8px;
+        background:${isUnread ? "rgba(230, 57, 70, 0.05)" : "transparent"};
+        border-left:3px solid ${isUnread ? "var(--accent-primary)" : "transparent"};
+        cursor:pointer;
+        transition:all 0.2s;
+        animation:slideInUp ${0.3 + index * 0.05}s ease forwards;
+      " onmouseover="this.style.background='rgba(230, 57, 70, 0.08)'" onmouseout="this.style.background='${isUnread ? "rgba(230, 57, 70, 0.05)" : "transparent"}'">
+        <div style="display:flex;align-items:start;gap:10px;">
+          <div style="font-size:20px;line-height:1;">${icon}</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;color:var(--text);line-height:1.5;margin-bottom:4px;">${message}</div>
+            <div style="font-size:12px;color:var(--text-secondary);">${timeAgo}</div>
+          </div>
+          ${isUnread ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--accent-primary);"></div>' : ''}
+        </div>
+      </div>
+    `;
+  }).join("");
+  
+  // Add click handlers to notification items
+  document.querySelectorAll(".notifItem").forEach(item => {
+    item.addEventListener("click", async () => {
+      const notifId = item.dataset.notifId;
+      const postId = item.dataset.postId;
+      
+      // Mark as read
+      await markNotificationAsRead(notifId);
+      await loadNotifications();
+      
+      // Close notification panel
+      if (notifPanel) {
+        notifPanel.classList.add("hidden");
+      }
+      
+      // Scroll to the post (if on posts page)
+      if (postId) {
+        const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+        if (postElement) {
+          postElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          postElement.style.animation = "highlightPost 2s ease";
+        }
+      }
+    });
+  });
 }
 
-window.pushAppNotification = function (title, text) {
-  APP_NOTIFICATIONS.unshift({ title, text, id: Date.now() });
-  if (APP_NOTIFICATIONS.length > 100) APP_NOTIFICATIONS.length = 100;
-  renderNotifBadge();
-  renderNotifPanel();
-};
-
 if (notifBtn) {
-  notifBtn.addEventListener("click", (e) => {
+  notifBtn.addEventListener("click", async (e) => {
     e.stopPropagation();
+    
+    // Load latest notifications before showing
+    await loadNotifications();
+    
     notifPanel.classList.toggle("hidden");
     notifPanel.setAttribute(
       "aria-hidden",
@@ -518,11 +636,12 @@ document.addEventListener("click", (e) => {
 });
 
 if (clearNotifs) {
-  clearNotifs.addEventListener("click", () => {
-    APP_NOTIFICATIONS.length = 0;
-    renderNotifBadge();
-    renderNotifPanel();
-    showNotification("All notifications cleared!", "info");
+  clearNotifs.addEventListener("click", async () => {
+    if (!auth.currentUser) return;
+    
+    await clearAllNotifications(auth.currentUser.uid);
+    await loadNotifications();
+    
     // Close notification panel
     if (notifPanel) {
       notifPanel.classList.add("hidden");
@@ -651,11 +770,21 @@ applyTheme(initialSettings.theme || "light");
 // ============================================
 onAuthStateChange(async (firebaseUser) => {
   if (firebaseUser) {
-    currentUserData = await getUserData(firebaseUser.uid);
+    try {
+      currentUserData = await getUserData(firebaseUser.uid);
+    } catch (error) {
+      console.error("Error loading user data:", error);
+      currentUserData = null;
+    }
     updateTopbar();
+    // Load notifications for logged-in user
+    await loadNotifications();
   } else {
     currentUserData = null;
     updateTopbar();
+    // Clear notifications for logged-out state
+    renderNotifBadge(0);
+    renderNotifPanel([]);
   }
   // Hide auth loading spinner
   authLoading = false;
@@ -829,6 +958,7 @@ async function renderPosts(postsToRender = null) {
     
     const el = document.createElement("article");
     el.className = "post card";
+    el.setAttribute("data-post-id", post.id);
 
     const categoryIcon =
       post.category === "Novel" ? "📖" : post.category === "Poem" ? "✍️" : "📝";
@@ -846,6 +976,13 @@ async function renderPosts(postsToRender = null) {
     // Get comments (support threaded comments with parentId)
     const comments = await getPostComments(post.id);
     console.log(`[renderPosts] Post ${post.id} has ${comments.length} comments:`, comments);
+    
+    // Check liked status for each comment if user is logged in
+    if (auth.currentUser) {
+      for (const comment of comments) {
+        comment.likedByCurrentUser = await isCommentLikedByUser(comment.id, auth.currentUser.uid);
+      }
+    }
     
     // build comment tree map
     const commentsByParent = {};
@@ -1002,7 +1139,13 @@ async function renderPosts(postsToRender = null) {
 
     // Add like handler for all comment like buttons
     el.querySelectorAll('.commentLikeBtn').forEach(btn => {
-      btn.addEventListener('click', function() {
+      btn.addEventListener('click', async function() {
+        if (!auth.currentUser) {
+          showNotification("Please log in to like comments", "error");
+          return;
+        }
+
+        const commentId = btn.dataset.commentId;
         const likeCountSpan = btn.querySelector('.commentLikeCount');
         const isLiked = btn.dataset.liked === 'true';
         let count = parseInt(likeCountSpan.textContent) || 0;
@@ -1013,14 +1156,26 @@ async function renderPosts(postsToRender = null) {
           btn.classList.remove('liked');
           btn.style.color = 'var(--text-secondary)';
           count = Math.max(0, count - 1);
+          likeCountSpan.textContent = String(count);
+          
+          // Sync with backend
+          await unlikeComment(commentId, auth.currentUser.uid);
         } else {
           btn.dataset.liked = 'true';
           btn.classList.add('liked');
           btn.style.color = '#e63946';
           count = count + 1;
+          likeCountSpan.textContent = String(count);
+          
+          // Sync with backend (pass user name for notification)
+          const userName = currentUserData?.displayName || auth.currentUser.displayName || auth.currentUser.email || "Someone";
+          await likeComment(commentId, auth.currentUser.uid, userName);
+          
+          // Reload notifications to show the new notification
+          if (auth.currentUser) {
+            setTimeout(() => loadNotifications(), 1000);
+          }
         }
-        likeCountSpan.textContent = String(count);
-        // TODO: Sync with backend (addCommentLike/unlikeCommentLike)
       });
     });
 
@@ -1299,14 +1454,14 @@ async function renderPosts(postsToRender = null) {
 function updateTopbar() {
   const user = auth.currentUser;
 
-  if (user && currentUserData) {
+  if (user) {
     loginBtn.classList.add("hidden");
     registerBtn.classList.add("hidden");
     userIconBtn.classList.remove("hidden");
     
     // Update user menu header
-    const displayName = currentUserData.displayName || user.email.split('@')[0];
-    const email = user.email;
+    const displayName = currentUserData?.displayName || user.displayName || (user.email ? user.email.split('@')[0] : "User");
+    const email = user.email || "";
     const userMenuDisplayName = document.querySelector('.userMenuDisplayName');
     const userMenuEmail = document.querySelector('.userMenuEmail');
     const userMenuAvatar = document.querySelector('.userMenuAvatar');
@@ -1316,7 +1471,7 @@ function updateTopbar() {
     
     // Update avatar in menu
     if (userMenuAvatar) {
-      if (currentUserData.profilePic) {
+      if (currentUserData?.profilePic) {
         const avatarUrl = appendCacheBuster(currentUserData.profilePic);
         userMenuAvatar.style.backgroundImage = `url("${avatarUrl}")`;
         userMenuAvatar.style.background = `url("${avatarUrl}") center/cover`;
@@ -1330,13 +1485,16 @@ function updateTopbar() {
     
     // Update likes badge
     const likesBadge = document.getElementById('likesBadge');
-    if (likesBadge && currentUserData.savedPosts) {
+    if (likesBadge && currentUserData?.savedPosts) {
       const likeCount = currentUserData.savedPosts.length;
       likesBadge.textContent = likeCount;
       likesBadge.style.display = likeCount > 0 ? 'flex' : 'none';
+    } else if (likesBadge) {
+      likesBadge.textContent = '0';
+      likesBadge.style.display = 'none';
     }
 
-    if (currentUserData.profilePic) {
+    if (currentUserData?.profilePic) {
       const avatarUrl = appendCacheBuster(currentUserData.profilePic);
       userIconBtn.classList.add("has-avatar");
       userIconBtn.style.backgroundImage = `url("${avatarUrl}")`;

@@ -486,6 +486,17 @@ body.theme-transitioning{
   }
 }
 
+@keyframes highlightPost {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(230, 57, 70, 0.3);
+    transform: scale(1.02);
+  }
+}
+
 /* Header */
 .topBar{
   display:flex;
