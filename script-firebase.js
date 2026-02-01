@@ -532,7 +532,7 @@ async function renderPosts(postsToRender = null) {
   postsRoot.innerHTML = "";
 
   for (const post of posts) {
-    console.log(`[renderPosts] Processing post - id: ${post.id}, title: ${post.title}, likes: ${post.likes || 0}, comments: ${post.comments || 0}`);
+    console.log(`[renderPosts] Processing post - id: ${post.id}, title: ${post.title}, likes: ${post.likes || 0}, comments: ${post.comments || 0}, imageUrl: ${post.imageUrl || 'none'}, image: ${post.image || 'none'}, coverImage: ${post.coverImage || 'none'}`);
     
     const el = document.createElement("article");
     el.className = "post card";
@@ -627,6 +627,14 @@ async function renderPosts(postsToRender = null) {
       (plainText.length > 150 ? "..." : "");
     const showMore = plainText.length > 150;
 
+    // Image HTML - check multiple possible field names for post images
+    const postImageUrl = post.imageUrl || post.image || post.coverImage || null;
+    const imageHTML = postImageUrl ? `
+      <div class="postImageWrap" style="width:100%;max-height:300px;overflow:hidden;border-radius:12px;margin-bottom:16px;">
+        <img src="${postImageUrl}" alt="${escapeHTML(post.title)}" class="postImage" style="width:100%;height:auto;max-height:300px;object-fit:cover;display:block;border-radius:12px;" onerror="this.parentElement.style.display='none'" />
+      </div>
+    ` : '';
+
     el.innerHTML = `
       <div class="postHeader">
         <h3 class="postTitle">${escapeHTML(post.title)}</h3>
@@ -637,6 +645,8 @@ async function renderPosts(postsToRender = null) {
           <span>by ${escapeHTML(post.authorName)}</span>
         </div>
       </div>
+
+      ${imageHTML}
 
       <div class="postContent">
         <p class="postContentText" data-expanded="false" style="color:var(--text);line-height:1.6;margin:12px 0">
@@ -1000,7 +1010,38 @@ function updateTopbar() {
     loginBtn.classList.add("hidden");
     registerBtn.classList.add("hidden");
     userIconBtn.classList.remove("hidden");
-    currentUserName.textContent = `Signed in: ${currentUserData.displayName || user.email}`;
+    
+    // Update user menu header
+    const displayName = currentUserData.displayName || user.email.split('@')[0];
+    const email = user.email;
+    const userMenuDisplayName = document.querySelector('.userMenuDisplayName');
+    const userMenuEmail = document.querySelector('.userMenuEmail');
+    const userMenuAvatar = document.querySelector('.userMenuAvatar');
+    
+    if (userMenuDisplayName) userMenuDisplayName.textContent = displayName;
+    if (userMenuEmail) userMenuEmail.textContent = email;
+    
+    // Update avatar in menu
+    if (userMenuAvatar) {
+      if (currentUserData.profilePic) {
+        const avatarUrl = appendCacheBuster(currentUserData.profilePic);
+        userMenuAvatar.style.backgroundImage = `url("${avatarUrl}")`;
+        userMenuAvatar.style.background = `url("${avatarUrl}") center/cover`;
+        userMenuAvatar.textContent = '';
+      } else {
+        userMenuAvatar.style.backgroundImage = '';
+        userMenuAvatar.style.background = 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))';
+        userMenuAvatar.textContent = displayName.charAt(0).toUpperCase();
+      }
+    }
+    
+    // Update likes badge
+    const likesBadge = document.getElementById('likesBadge');
+    if (likesBadge && currentUserData.savedPosts) {
+      const likeCount = currentUserData.savedPosts.length;
+      likesBadge.textContent = likeCount;
+      likesBadge.style.display = likeCount > 0 ? 'flex' : 'none';
+    }
 
     if (currentUserData.profilePic) {
       const avatarUrl = appendCacheBuster(currentUserData.profilePic);
@@ -1017,7 +1058,18 @@ function updateTopbar() {
     registerBtn.classList.remove("hidden");
     userIconBtn.classList.add("hidden");
     userMenu.classList.add("hidden");
-    currentUserName.textContent = "";
+    
+    // Clear user menu header
+    const userMenuDisplayName = document.querySelector('.userMenuDisplayName');
+    const userMenuEmail = document.querySelector('.userMenuEmail');
+    const userMenuAvatar = document.querySelector('.userMenuAvatar');
+    if (userMenuDisplayName) userMenuDisplayName.textContent = '';
+    if (userMenuEmail) userMenuEmail.textContent = '';
+    if (userMenuAvatar) {
+      userMenuAvatar.style.backgroundImage = '';
+      userMenuAvatar.textContent = '';
+    }
+    
     userIconBtn.classList.remove("has-avatar");
     userIconBtn.style.backgroundImage = "";
     userIconBtn.textContent = "👤";
@@ -1040,6 +1092,7 @@ function switchToRegister() {
 }
 
 window.switchToRegister = switchToRegister;
+window.switchToLogin = switchToLogin;
 
 loginBtn.addEventListener("click", () => {
   switchToLogin();
@@ -1073,6 +1126,12 @@ loginForm.addEventListener("submit", async (e) => {
   const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
 
+  // No password validation for login - allow existing users with old passwords to login
+  if (!password) {
+    showNotification("⚠️ Please enter your password", "error");
+    return;
+  }
+
   try {
     await loginUser(email, password);
     authModalOverlay.classList.add("hidden");
@@ -1104,8 +1163,15 @@ registerForm.addEventListener("submit", async (e) => {
     return;
   }
 
-  if (password.length < 6) {
-    showNotification("⚠️ Password must be at least 6 characters", "error");
+  // Strong password validation
+  if (password.length < 8) {
+    showNotification("⚠️ Password must be at least 8 characters", "error");
+    return;
+  }
+  
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+  if (!passwordRegex.test(password)) {
+    showNotification("⚠️ Password must contain: uppercase, lowercase, number, and special character (@$!%*?&#)", "error");
     return;
   }
 
@@ -1180,16 +1246,23 @@ if (likesBtn) {
     }
     try {
       await renderProfileModalFancy();
-      // Switch to Liked tab if available
+      // Switch to Posts tab and show saved posts
       setTimeout(() => {
-        const tabBtn = document.querySelector('.pf-tab[data-tab="posts"]');
-        if (tabBtn) tabBtn.click();
-        const likedBtn = document.getElementById('pf-showLiked');
-        if (likedBtn) likedBtn.click();
-      }, 100);
+        const postsTabBtn = document.querySelector('.pf-tab[data-tab="posts"]');
+        if (postsTabBtn) {
+          postsTabBtn.click();
+        }
+        // Then click the Saved button
+        setTimeout(() => {
+          const savedBtn = document.getElementById('pf-showSaved');
+          if (savedBtn) {
+            savedBtn.click();
+          }
+        }, 150);
+      }, 150);
     } catch (err) {
       console.error(err);
-      showNotification("Unable to open likes", "error");
+      showNotification("Unable to open saved posts", "error");
     }
   });
 }
@@ -1202,11 +1275,13 @@ if (settingsBtn) {
     }
     try {
       await renderProfileModalFancy();
-      // Switch to Settings tab if available
+      // Switch to Settings tab
       setTimeout(() => {
-        const tabBtn = document.querySelector('.pf-tab[data-tab="settings"]');
-        if (tabBtn) tabBtn.click();
-      }, 100);
+        const settingsTabBtn = document.querySelector('.pf-tab[data-tab="settings"]');
+        if (settingsTabBtn) {
+          settingsTabBtn.click();
+        }
+      }, 150);
     } catch (err) {
       console.error(err);
       showNotification("Unable to open settings", "error");

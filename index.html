@@ -72,25 +72,53 @@
         <button id="loginBtn" data-i18n="login">Log in</button>
         <button id="registerBtn" data-i18n="register">Register</button>
         <button id="userIconBtn" class="hidden" aria-label="User profile">👤</button>
-        <div id="userMenu" class="userMenu hidden" aria-hidden="true">
-          <div id="currentUserName"></div>
+        <div id="userMenu" class="userMenu hidden">
+          <div id="currentUserName" class="userMenuHeader">
+            <div class="userMenuAvatar"></div>
+            <div class="userMenuInfo">
+              <div class="userMenuDisplayName"></div>
+              <div class="userMenuEmail"></div>
+            </div>
+          </div>
+          <div class="userMenuDivider"></div>
           <div class="userMenuSection">
-            <button id="profileBtn" data-i18n="profile">👤 Profile</button>
+            <button id="profileBtn" data-i18n="profile" class="userMenuBtn">
+              <span class="menuIcon">👤</span>
+              <span class="menuText">Profile</span>
+              <span class="menuArrow">›</span>
+            </button>
           </div>
           <div class="userMenuSection">
-            <button id="likesBtn" data-i18n="likes">❤️ My Likes</button>
+            <button id="likesBtn" data-i18n="likes" class="userMenuBtn">
+              <span class="menuIcon">❤️</span>
+              <span class="menuText">Save Posts</span>
+              <span class="menuBadge" id="likesBadge">0</span>
+            </button>
           </div>
           <div class="userMenuSection">
-            <button id="settingsBtn" data-i18n="settings">⚙️ Settings</button>
+            <button id="settingsBtn" data-i18n="settings" class="userMenuBtn">
+              <span class="menuIcon">⚙️</span>
+              <span class="menuText">Settings</span>
+              <span class="menuArrow">›</span>
+            </button>
           </div>
+          <div class="userMenuDivider"></div>
           <div class="userMenuSection">
-            <button id="langToggleBtn" data-i18n="langToggle" style="width:100%;margin:6px 0;padding:7px 16px;border-radius:8px;background:linear-gradient(90deg,#457b9d,#e63946);color:#fff;font-weight:600;border:none;cursor:pointer;">বাংলা</button>
+            <button id="langToggleBtn" data-i18n="langToggle" class="userMenuBtn langBtn">
+              <span class="menuIcon">🌐</span>
+              <span class="menuText">বাংলা</span>
+              <span class="menuSwitch">EN</span>
+            </button>
           </div>
+          <div class="userMenuDivider"></div>
           <div class="userMenuSection">
-            <button id="logoutBtn" data-i18n="logout">🚪 Log out</button>
+            <button id="logoutBtn" data-i18n="logout" class="userMenuBtn logoutBtn">
+              <span class="menuIcon">🚪</span>
+              <span class="menuText">Log out</span>
+            </button>
           </div>
         </div>
-        <div id="notifPanel" class="userMenu hidden" aria-hidden="true">
+        <div id="notifPanel" class="userMenu hidden">
           <div style="padding:12px 16px;font-weight:700;border-bottom:1px solid var(--border);background:linear-gradient(135deg, rgba(230, 57, 70, 0.05), rgba(69, 123, 157, 0.02));color:var(--accent-primary)"><span data-i18n="notifications">🔔 Notifications</span></div>
           <div id="notifList" style="max-height:320px;overflow-y:auto;padding:8px;min-width:280px"></div>
           <div style="padding:12px;border-top:1px solid var(--border);text-align:center;background:linear-gradient(135deg, rgba(230, 57, 70, 0.02), transparent)"><button id="clearNotifs" class="btn btn-ghost" data-i18n="clearAll">Clear All</button></div>

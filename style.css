@@ -770,14 +770,14 @@ body.dark #toggleTheme{
   right:0;
   margin-top:12px;
   background:var(--card);
-  border-radius:14px;
+  border-radius:16px;
   border:2px solid var(--border);
-  box-shadow:0 12px 32px rgba(0,0,0,0.2);
-  min-width:200px;
+  box-shadow:0 16px 48px rgba(0,0,0,0.25), 0 8px 24px rgba(230, 57, 70, 0.1);
+  min-width:280px;
   overflow:hidden;
   animation:menuSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
 }
 
 @keyframes menuSlideIn{
@@ -794,6 +794,191 @@ body.dark #toggleTheme{
 .userMenu.hidden{
   display:none;
   animation:none;
+}
+
+/* User Menu Header */
+.userMenuHeader{
+  padding:20px 18px;
+  background:linear-gradient(135deg, rgba(230, 57, 70, 0.08) 0%, rgba(69, 123, 157, 0.08) 100%);
+  border-bottom:2px solid var(--border);
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.userMenuAvatar{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  background:linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  font-weight:800;
+  color:white;
+  box-shadow:0 4px 12px rgba(230, 57, 70, 0.3);
+  background-size:cover;
+  background-position:center;
+  flex-shrink:0;
+}
+
+.userMenuInfo{
+  flex:1;
+  overflow:hidden;
+}
+
+.userMenuDisplayName{
+  font-weight:700;
+  font-size:16px;
+  color:var(--text);
+  margin-bottom:4px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.userMenuEmail{
+  font-size:12px;
+  color:var(--secondary);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.userMenuDivider{
+  height:1px;
+  background:linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
+  margin:6px 0;
+}
+
+/* User Menu Buttons */
+.userMenuBtn{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  padding:14px 18px;
+  border:none;
+  background:transparent;
+  color:var(--text);
+  text-align:left;
+  cursor:pointer;
+  transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size:15px;
+  font-weight:600;
+  position:relative;
+  overflow:hidden;
+}
+
+.menuIcon{
+  font-size:20px;
+  width:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menuText{
+  flex:1;
+}
+
+.menuArrow{
+  font-size:20px;
+  opacity:0;
+  transform:translateX(-10px);
+  transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color:var(--accent-primary);
+}
+
+.menuBadge{
+  background:linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color:white;
+  padding:2px 8px;
+  border-radius:12px;
+  font-size:11px;
+  font-weight:700;
+  min-width:20px;
+  text-align:center;
+  display:none;
+  box-shadow:0 2px 8px rgba(230, 57, 70, 0.3);
+}
+
+.menuSwitch{
+  background:var(--soft);
+  color:var(--text);
+  padding:4px 10px;
+  border-radius:8px;
+  font-size:11px;
+  font-weight:700;
+  border:1px solid var(--border);
+  transition:all 0.3s;
+}
+
+.userMenuBtn::before{
+  content:'';
+  position:absolute;
+  left:0;
+  top:0;
+  width:4px;
+  height:100%;
+  background:linear-gradient(180deg, var(--accent-primary), var(--accent-secondary));
+  transform:scaleY(0);
+  transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.userMenuBtn:hover{
+  background:linear-gradient(135deg, rgba(230, 57, 70, 0.1) 0%, rgba(69, 123, 157, 0.05) 100%);
+  color:var(--accent-primary);
+  padding-left:24px;
+  transform:translateX(4px);
+}
+
+.userMenuBtn:hover::before{
+  transform:scaleY(1);
+}
+
+.userMenuBtn:hover .menuIcon{
+  transform:scale(1.2) rotate(10deg);
+}
+
+.userMenuBtn:hover .menuArrow{
+  opacity:1;
+  transform:translateX(0);
+}
+
+.userMenuBtn:hover .menuSwitch{
+  background:linear-gradient(135deg, var(--accent-tertiary), var(--accent-primary));
+  color:white;
+  border-color:transparent;
+}
+
+.userMenuBtn:active{
+  transform:translateX(4px) scale(0.98);
+}
+
+/* Language Button Special Styling */
+.langBtn{
+  position:relative;
+}
+
+.langBtn .menuIcon{
+  font-size:18px;
+}
+
+/* Logout Button Special Styling */
+.logoutBtn{
+  color:var(--accent-primary);
+}
+
+.logoutBtn:hover{
+  background:linear-gradient(135deg, rgba(230, 57, 70, 0.15) 0%, rgba(247, 127, 136, 0.1) 100%);
+  color:#dc3545;
+}
+
+.logoutBtn:hover .menuIcon{
+  transform:scale(1.2) rotate(-15deg);
 }
 
 #currentUserName{
