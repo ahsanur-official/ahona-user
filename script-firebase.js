@@ -83,10 +83,109 @@ const translations = {
     comments: "Comments",
     login: "Log in",
     register: "Register",
-    // ...add more as needed
+    more: "More",
+    less: "Less",
+    save: "Save",
+    saved: "Saved",
+    profile: "Profile",
+    savePosts: "Save Posts",
+    settings: "Settings",
+    logout: "Log out",
+    signedIn: "Signed in",
+    noStoriesYet: "No Stories Yet",
+    storiesWillAppear: "Stories will appear here once published.",
+    noStoriesFound: "No Stories Found",
+    noMatch: "match your filter.",
+    viewsCount: "views",
+    minRead: "min",
+    by: "by",
+    noCommentsYet: "No comments yet",
+    all: "All",
+    novel: "Novel",
+    poem: "Poem",
+    story: "Short Story",
+    searchPlaceholder: "Search stories...",
+    featuredStories: "Featured Stories",
+    english: "English",
+    bangla: "বাংলা",
+    no: "No",
+    footerBrand: "📚 Ahona Islam",
+    footerDescription: "A platform dedicated to sharing beautiful stories, poems, and literary works that inspire and connect readers worldwide.",
+    quickLinks: "QUICK LINKS",
+    browseStories: "Browse Stories",
+    categories: "Categories",
+    popularTags: "Popular Tags",
+    community: "Community",
+    resources: "RESOURCES",
+    writingTips: "Writing Tips",
+    faq: "FAQ",
+    privacyPolicy: "Privacy Policy",
+    termsOfService: "Terms of Service",
+    about: "ABOUT",
+    aboutAhonaIslam: "About Ahona Islam",
+    footerMeta: "Empowering writers and readers since 2024",
+    footerCopyright: "© 2026 Ahona Islam. All stories and content are protected by copyright. Built with passion for storytelling.",
+    // About Modal
+    aboutTitle: "About Ahona Islam",
+    aboutSubtitle: "Author, Poet & Literary Curator",
+    aboutDescription: "Passionate storyteller sharing beautiful narratives with the world",
+    aboutSectionTitle: "ABOUT",
+    aboutText: "Ahona Islam is a dedicated author and poet committed to crafting meaningful stories, heartfelt poems, and insightful literary works. With a passion for language and storytelling, Ahona creates content that resonates with readers and inspires imagination.",
+    missionTitle: "MISSION",
+    missionText: "To create a vibrant community where writers and readers connect, share, and celebrate the beauty of literature. Every story is an opportunity to inspire, challenge, and transform perspectives through the power of words.",
+    categoriesTitle: "CATEGORIES",
+    novelsLabel: "Novels",
+    novelsDesc: "Immersive long-form narratives exploring human emotions and experiences.",
+    poemsLabel: "Poems",
+    poemsDesc: "Lyrical expressions capturing moments, feelings, and reflections.",
+    storiesLabel: "Short Stories",
+    storiesDesc: "Concise, powerful tales that deliver impact and insight.",
+    connectTitle: "CONNECT",
+    connectText: "Follow Ahona for the latest releases, writing updates, and literary discussions across social media. Every story shared is crafted with care and passion for you to enjoy.",
+    // Writing Tips Modal
+    writingTipsTitle: "Writing Tips & Guides",
+    storyStructureTitle: "Story Structure",
+    storyStructureText: "Start with a compelling hook, develop your characters gradually, create conflict that drives the narrative forward, and resolve with a meaningful ending. Remember, every scene should serve a purpose.",
+    writingCraftTitle: "Writing Craft",
+    writingCraftText: "Show, don't tell. Use vivid descriptions and active verbs. Vary your sentence structure. Read your work aloud to catch awkward phrasing. Edit ruthlessly—the best writers are fierce editors.",
+    inspirationTitle: "Finding Inspiration",
+    inspirationText: "Write about what moves you. Observe real life, explore emotions, read widely, and don't be afraid to write badly at first. The magic happens in revision, not the first draft.",
+    poetryTipsTitle: "Poetry Tips",
+    poetryTipsText: "Use imagery to evoke emotion. Experiment with rhythm and form. Poetry is about compression—every word matters. Read poetry aloud to feel the cadence.",
+    shortStoryTitle: "Short Story Magic",
+    shortStoryText: "Hook readers immediately. Focus on one central conflict. Every detail counts. Surprise your reader with a twist or revelation. A great short story resonates long after reading.",
+    // Privacy Policy Modal
+    privacyTitle: "Privacy Policy",
+    infoCollectTitle: "1. Information We Collect",
+    infoCollectText: "We collect information you provide directly, such as your name, email, username, and profile information. We also automatically collect usage data and analytics about how you interact with our platform.",
+    infoUseTitle: "2. How We Use Your Information",
+    infoUseText: "We use your information to provide and improve our services, personalize your experience, communicate with you, and ensure platform security. We never sell or share your data with third parties without consent.",
+    dataSecurityTitle: "3. Data Security",
+    dataSecurityText: "Your data is encrypted and stored securely. We implement industry-standard security measures to protect your information from unauthorized access, alteration, or disclosure.",
+    yourRightsTitle: "4. Your Rights",
+    yourRightsText: "You have the right to access, modify, or delete your personal data. You can update your profile settings anytime. Contact support for data deletion requests.",
+    cookiesTitle: "5. Cookies",
+    cookiesText: "We use cookies to enhance your experience and remember your preferences. You can manage cookie settings in your browser.",
+    lastUpdated: "Last updated: January 2024",
+    faqTitle: "Frequently Asked Questions",
+    popularTagsTitle: "Popular Tags",
+    // Terms of Service Modal
+    termsTitle: "Terms of Service",
+    faqTitle: "Frequently Asked Questions",
+    popularTagsTitle: "Popular Tags",
+    userAgreementTitle: "1. User Agreement",
+    userAgreementText: "By using Ahona Islam, you agree to these terms and conditions. If you do not agree, please do not use our services. We reserve the right to modify these terms at any time.",
+    contentOwnershipTitle: "2. Content Ownership",
+    contentOwnershipText: "You retain full ownership of the content you create and publish. By publishing on our platform, you grant us a license to display your work to the community. All content is protected by copyright.",
+    communityGuidelinesTitle: "3. Community Guidelines",
+    communityGuidelinesText: "Be respectful. No harassment, hate speech, or inappropriate content. Respect others' intellectual property. Violations may result in content removal or account suspension.",
+    acceptableUseTitle: "4. Acceptable Use",
+    acceptableUseText: "Do not use the platform for illegal activities, spam, malware, or unauthorized access. Do not plagiarize or claim others' work as your own.",
+    liabilityTitle: "5. Liability Disclaimer",
+    liabilityText: "Ahona Islam is provided \"as is\" without warranties. We are not liable for indirect damages or lost data. Users assume all risks of platform use."
   },
   bn: {
-    welcome: "আহোনা ইসলামের গল্পের জগতে স্বাগতম..",
+    welcome: "অহনা ইসলামের গল্পের জগতে স্বাগতম..",
     discover: "ভালবাসা দিয়ে গড়া উপন্যাস, কবিতা ও ছোট গল্প আবিষ্কার করুন",
     loading: "লোড হচ্ছে...",
     commentPlaceholder: "একটি সুন্দর মন্তব্য লিখুন...",
@@ -94,7 +193,104 @@ const translations = {
     comments: "মন্তব্যসমূহ",
     login: "লগইন",
     register: "রেজিস্টার",
-    // ...add more as needed
+    more: "আরও",
+    less: "কম",
+    save: "সংরক্ষণ",
+    saved: "সংরক্ষিত",
+    profile: "প্রোফাইল",
+    savePosts: "সংরক্ষিত পোস্ট",
+    settings: "সেটিংস",
+    logout: "লগ আউট",
+    signedIn: "সাইন ইন করা আছে",
+    noStoriesYet: "এখনো কোনো গল্প নেই",
+    storiesWillAppear: "প্রকাশিত হলে গল্প এখানে দেখা যাবে।",
+    noStoriesFound: "কোনো গল্প পাওয়া যায়নি",
+    noMatch: "আপনার ফিল্টারের সাথে মিল নেই।",
+    viewsCount: "ভিউ",
+    minRead: "মিনিট",
+    by: "লেখক",
+    noCommentsYet: "এখনো কোনো মন্তব্য নেই",
+    all: "সব",
+    novel: "উপন্যাস",
+    poem: "কবিতা",
+    story: "ছোট গল্প",
+    searchPlaceholder: "গল্প খুঁজুন...",
+    featuredStories: "বিশেষ গল্পসমূহ",
+    english: "English",
+    bangla: "বাংলা",
+    no: "কোনো",
+    footerBrand: "📚 অহনা ইসলাম",
+    footerDescription: "একটি প্ল্যাটফর্ম যা সুন্দর গল্প, কবিতা এবং সাহিত্যকর্ম শেয়ার করার জন্য নিবেদিত যা বিশ্বব্যাপী পাঠকদের অনুপ্রাণিত এবং সংযুক্ত করে।",
+    quickLinks: "দ্রুত লিঙ্ক",
+    browseStories: "গল্প ব্রাউজ করুন",
+    categories: "ক্যাটাগরি",
+    popularTags: "জনপ্রিয় ট্যাগ",
+    community: "কমিউনিটি",
+    resources: "রিসোর্স",
+    writingTips: "লেখার টিপস",
+    faq: "প্রশ্ন উত্তর",
+    privacyPolicy: "গোপনীয়তা নীতি",
+    termsOfService: "সেবার শর্তাবলী",
+    about: "সম্পর্কে",
+    aboutAhonaIslam: "অহনা ইসলাম সম্পর্কে",
+    footerMeta: "২০২২ সাল থেকে লেখক এবং পাঠকদের ক্ষমতায়ন",
+    footerCopyright: "© ২০২৬ অহনা ইসলাম। সকল গল্প এবং বিষয়বস্তু কপিরাইট দ্বারা সুরক্ষিত। গল্প বলার আবেগ দিয়ে তৈরি।",
+    // About Modal
+    aboutTitle: "অহনা ইসলাম সম্পর্কে",
+    aboutSubtitle: "লেখক, কবি এবং সাহিত্য কিউরেটর",
+    aboutDescription: "বিশ্বের সাথে সুন্দর কাহিনী শেয়ার করার আবেগপ্রবণ গল্পকার",
+    aboutSectionTitle: "সম্পর্কে",
+    aboutText: "অহনা ইসলাম একজন নিবেদিত লেখক এবং কবি যিনি অর্থপূর্ণ গল্প, হৃদয়স্পর্শী কবিতা এবং অন্তর্দৃষ্টিপূর্ণ সাহিত্যকর্ম তৈরি করতে প্রতিশ্রুতিবদ্ধ। ভাষা এবং গল্প বলার প্রতি আবেগের সাথে, অহনা এমন বিষয়বস্তু তৈরি করেন যা পাঠকদের সাথে অনুরণিত হয় এবং কল্পনাকে অনুপ্রাণিত করে।",
+    missionTitle: "লক্ষ্য",
+    missionText: "একটি প্রাণবন্ত সম্প্রদায় তৈরি করা যেখানে লেখক এবং পাঠকরা সংযোগ করতে, শেয়ার করতে এবং সাহিত্যের সৌন্দর্য উদযাপন করতে পারেন। প্রতিটি গল্প শব্দের শক্তির মাধ্যমে অনুপ্রাণিত, চ্যালেঞ্জ এবং দৃষ্টিভঙ্গি রূপান্তরিত করার একটি সুযোগ।",
+    categoriesTitle: "ক্যাটাগরি",
+    novelsLabel: "উপন্যাস",
+    novelsDesc: "মানুষের আবেগ এবং অভিজ্ঞতা অন্বেষণ করে নিমগ্ন দীর্ঘ-ফর্ম আখ্যান।",
+    poemsLabel: "কবিতা",
+    poemsDesc: "মুহূর্ত, অনুভূতি এবং প্রতিফলন ক্যাপচার করে গীতিকবিতা প্রকাশ।",
+    storiesLabel: "ছোট গল্প",
+    storiesDesc: "সংক্ষিপ্ত, শক্তিশালী গল্প যা প্রভাব এবং অন্তর্দৃষ্টি প্রদান করে।",
+    connectTitle: "সংযোগ",
+    connectText: "সর্বশেষ প্রকাশনা, লেখার আপডেট এবং সোশ্যাল মিডিয়া জুড়ে সাহিত্যিক আলোচনার জন্য অহনাকে অনুসরণ করুন। শেয়ার করা প্রতিটি গল্প যত্ন এবং আবেগের সাথে তৈরি করা হয় আপনার উপভোগ করার জন্য।",
+    // Writing Tips Modal
+    writingTipsTitle: "লেখার টিপস এবং গাইড",
+    storyStructureTitle: "গল্পের কাঠামো",
+    storyStructureText: "একটি আকর্ষণীয় হুক দিয়ে শুরু করুন, আপনার চরিত্রগুলিকে ধীরে ধীরে বিকশিত করুন, এমন দ্বন্দ্ব তৈরি করুন যা আখ্যানকে এগিয়ে নিয়ে যায় এবং একটি অর্থপূর্ণ সমাপ্তির সাথে সমাধান করুন। মনে রাখবেন, প্রতিটি দৃশ্যের একটি উদ্দেশ্য থাকা উচিত।",
+    writingCraftTitle: "লেখার কারুশিল্প",
+    writingCraftText: "দেখান, বলবেন না। প্রাণবন্ত বর্ণনা এবং সক্রিয় ক্রিয়া ব্যবহার করুন। আপনার বাক্য কাঠামো পরিবর্তন করুন। অস্বস্তিকর বাক্যাংশ ধরতে আপনার কাজ জোরে পড়ুন। নির্দয়ভাবে সম্পাদনা করুন—সেরা লেখকরা হলেন নিষ্ঠুর সম্পাদক।",
+    inspirationTitle: "অনুপ্রেরণা খুঁজে পাওয়া",
+    inspirationText: "যা আপনাকে উদ্বুদ্ধ করে তা নিয়ে লিখুন। বাস্তব জীবন পর্যবেক্ষণ করুন, আবেগ অন্বেষণ করুন, ব্যাপকভাবে পড়ুন এবং প্রথমে খারাপভাবে লিখতে ভয় পাবেন না। জাদু প্রথম খসড়ায় নয়, সংশোধনে ঘটে।",
+    poetryTipsTitle: "কবিতার টিপস",
+    poetryTipsText: "আবেগ জাগাতে কল্পনা ব্যবহার করুন। ছন্দ এবং ফর্ম নিয়ে পরীক্ষা করুন। কবিতা হল সংকোচন সম্পর্কে—প্রতিটি শব্দ গুরুত্বপূর্ণ। ছন্দ অনুভব করতে কবিতা জোরে পড়ুন।",
+    shortStoryTitle: "ছোট গল্পের জাদু",
+    shortStoryText: "অবিলম্বে পাঠকদের হুক করুন। একটি কেন্দ্রীয় দ্বন্দ্বে ফোকাস করুন। প্রতিটি বিবরণ গণনা করা হয়। একটি টুইস্ট বা উদ্ঘাটন দিয়ে আপনার পাঠককে অবাক করুন। একটি দুর্দান্ত ছোট গল্প পড়ার পরে দীর্ঘ সময় অনুরণিত হয়।",
+    // Privacy Policy Modal
+    privacyTitle: "গোপনীয়তা নীতি",
+    infoCollectTitle: "১. আমরা যে তথ্য সংগ্রহ করি",
+    infoCollectText: "আমরা আপনার নাম, ইমেল, ব্যবহারকারীর নাম এবং প্রোফাইল তথ্যের মতো আপনি সরাসরি প্রদান করা তথ্য সংগ্রহ করি। আমরা স্বয়ংক্রিয়ভাবে ব্যবহারের ডেটা এবং আপনি কীভাবে আমাদের প্ল্যাটফর্মের সাথে ইন্টারঅ্যাক্ট করেন তার বিশ্লেষণ সংগ্রহ করি।",
+    infoUseTitle: "২. আমরা কীভাবে আপনার তথ্য ব্যবহার করি",
+    infoUseText: "আমরা আমাদের পরিষেবাগুলি প্রদান এবং উন্নত করতে, আপনার অভিজ্ঞতা ব্যক্তিগতকৃত করতে, আপনার সাথে যোগাযোগ করতে এবং প্ল্যাটফর্ম সুরক্ষা নিশ্চিত করতে আপনার তথ্য ব্যবহার করি। আমরা আপনার সম্মতি ছাড়া তৃতীয় পক্ষের কাছে আপনার ডেটা বিক্রি বা ভাগ করি না।",
+    dataSecurityTitle: "৩. ডেটা সুরক্ষা",
+    dataSecurityText: "আপনার ডেটা এনক্রিপ্ট করা এবং নিরাপদে সংরক্ষণ করা হয়। আমরা আপনার তথ্যকে অননুমোদিত অ্যাক্সেস, পরিবর্তন বা প্রকাশ থেকে রক্ষা করতে শিল্প-মানের সুরক্ষা ব্যবস্থা প্রয়োগ করি।",
+    yourRightsTitle: "৪. আপনার অধিকার",
+    yourRightsText: "আপনার ব্যক্তিগত ডেটা অ্যাক্সেস, সংশোধন বা মুছে ফেলার অধিকার আছে। আপনি যেকোনো সময় আপনার প্রোফাইল সেটিংস আপডেট করতে পারেন। ডেটা মুছে ফেলার অনুরোধের জন্য সহায়তার সাথে যোগাযোগ করুন।",
+    cookiesTitle: "৫. কুকিজ",
+    cookiesText: "আমরা আপনার অভিজ্ঞতা বাড়াতে এবং আপনার পছন্দগুলি মনে রাখতে কুকিজ ব্যবহার করি। আপনি আপনার ব্রাউজারে কুকি সেটিংস পরিচালনা করতে পারেন।",
+    lastUpdated: "সর্বশেষ আপডেট: জানুয়ারি ২০২২",
+    faqTitle: "সাধারণ প्रश्न ও উत्तर",
+    popularTagsTitle: "জনপ্রিয় ট্যাগ",
+    // Terms of Service Modal
+    termsTitle: "সেবার শর্তাবলী",
+    userAgreementTitle: "১. ব্যবহারকারী চুক্তি",
+    userAgreementText: "অহনা ইসলাম ব্যবহার করে, আপনি এই নিয়ম ও শর্তাবলীতে সম্মত হন। যদি আপনি সম্মত না হন, অনুগ্রহ করে আমাদের পরিষেবাগুলি ব্যবহার করবেন না। আমরা যেকোনো সময় এই শর্তাবলী সংশোধন করার অধিকার সংরক্ষণ করি।",
+    contentOwnershipTitle: "২. বিষয়বস্তুর মালিকানা",
+    contentOwnershipText: "আপনি তৈরি এবং প্রকাশ করা বিষয়বস্তুর সম্পূর্ণ মালিকানা ধরে রাখেন। আমাদের প্ল্যাটফর্মে প্রকাশ করে, আপনি আমাদের সম্প্রদায়ের কাছে আপনার কাজ প্রদর্শন করার জন্য একটি লাইসেন্স প্রদান করেন। সমস্ত বিষয়বস্তু কপিরাইট দ্বারা সুরক্ষিত।",
+    communityGuidelinesTitle: "৩. সম্প্রদায়ের নির্দেশিকা",
+    communityGuidelinesText: "সম্মানজনক হন। কোন হয়রানি, ঘৃণাত্মক বক্তব্য, বা অনুপযুক্ত বিষয়বস্তু নেই। অন্যদের বুদ্ধিবৃত্তিক সম্পত্তিকে সম্মান করুন। লঙ্ঘনের ফলে বিষয়বস্তু অপসারণ বা অ্যাকাউন্ট স্থগিত হতে পারে।",
+    acceptableUseTitle: "৪. গ্রহণযোগ্য ব্যবহার",
+    acceptableUseText: "অবৈধ কার্যকলাপ, স্প্যাম, ম্যালওয়্যার বা অননুমোদিত অ্যাক্সেসের জন্য প্ল্যাটফর্ম ব্যবহার করবেন না। চুরি করবেন না বা অন্যের কাজকে আপনার নিজের বলে দাবি করবেন না।",
+    liabilityTitle: "৫. দায় অস্বীকৃতি",
+    liabilityText: "অহনা ইসলাম ওয়ারেন্টি ছাড়াই \"যেমন আছে\" প্রদান করা হয়। আমরা পরোক্ষ ক্ষতি বা হারানো ডেটার জন্য দায়ী নই। ব্যবহারকারীরা প্ল্যাটফর্ম ব্যবহারের সমস্ত ঝুঁকি গ্রহণ করে।"
   }
 };
 
@@ -103,24 +299,100 @@ function t(key) {
 }
 
 function updateLangUI() {
-  // Example: update main welcome text, comment placeholders, etc.
+  // Hero section
   const welcome = document.getElementById('mainWelcomeText');
   if (welcome) welcome.textContent = t('welcome');
   const discover = document.getElementById('mainDiscoverText');
   if (discover) discover.textContent = t('discover');
-  document.querySelectorAll('.commentForm textarea').forEach(el => el.placeholder = t('commentPlaceholder'));
-  document.querySelectorAll('.commentForm button[type="submit"]').forEach(el => el.textContent = t('commentBtn'));
-  document.querySelectorAll('.openCommentsBtn').forEach(el => el.textContent = t('comments'));
+  
+  // Search and filters
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.placeholder = t('searchPlaceholder');
+  
+  // Filter buttons
+  document.querySelectorAll('.filterBtn').forEach((btn, index) => {
+    const filters = ['all', 'novel', 'poem', 'story'];
+    if (index < filters.length) {
+      const icon = btn.textContent.match(/[📖✍️📝]/)?.[0] || '';
+      btn.textContent = icon + ' ' + t(filters[index]);
+    }
+  });
+  
+  // Auth buttons
+  const loginBtn = document.querySelector('[data-i18n="login"]');
+  if (loginBtn) loginBtn.textContent = t('login');
+  const registerBtn = document.querySelector('[data-i18n="register"]');
+  if (registerBtn) registerBtn.textContent = t('register');
+  
+  // User menu
+  const profileBtn = document.querySelector('#profileBtn .menuText');
+  if (profileBtn) profileBtn.textContent = t('profile');
+  const likesBtn = document.querySelector('#likesBtn .menuText');
+  if (likesBtn) likesBtn.textContent = t('savePosts');
+  const settingsBtn = document.querySelector('#settingsBtn .menuText');
+  if (settingsBtn) settingsBtn.textContent = t('settings');
+  const logoutBtn = document.querySelector('#logoutBtn .menuText');
+  if (logoutBtn) logoutBtn.textContent = t('logout');
+  
+  // Language toggle button
   const langBtn = document.getElementById('langToggleBtn');
-  if (langBtn) langBtn.textContent = currentLang === 'en' ? 'বাংলা' : 'English';
-  // Add more as needed
+  const langBtnText = langBtn?.querySelector('.menuText');
+  const langSwitch = langBtn?.querySelector('.menuSwitch');
+  if (langBtnText) langBtnText.textContent = currentLang === 'en' ? t('bangla') : t('english');
+  if (langSwitch) langSwitch.textContent = currentLang === 'en' ? 'EN' : 'বাং';
+  
+  // Comment forms
+  document.querySelectorAll('.commentForm textarea').forEach(el => {
+    el.placeholder = t('commentPlaceholder');
+  });
+  document.querySelectorAll('.commentForm button[type="submit"]').forEach(el => {
+    el.textContent = t('commentBtn');
+  });
+  
+  // Featured section
+  const featuredTitle = document.querySelector('.featuredPosts h2, #featuredPosts h2');
+  if (featuredTitle) featuredTitle.textContent = '✨ ' + t('featuredStories');
+  
+  // Update all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (translations[currentLang][key]) {
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        el.placeholder = t(key);
+      } else {
+        // Preserve icons
+        const icon = el.textContent.match(/[📖✍️📝👤❤️⚙️🚪🌐]/)?.[0] || '';
+        el.textContent = icon ? icon + ' ' + t(key) : t(key);
+      }
+    }
+  });
 }
 
 document.getElementById('langToggleBtn')?.addEventListener('click', () => {
   currentLang = currentLang === 'en' ? 'bn' : 'en';
   localStorage.setItem(LANG_KEY, currentLang);
   updateLangUI();
-  renderPosts(); // re-render posts/comments in new language
+  renderPosts(); // re-render to update button labels
+  
+  // Update open modals
+  const aboutModal = document.getElementById("aboutModal");
+  if (aboutModal && !aboutModal.classList.contains("hidden")) {
+    renderAboutAuthor();
+  }
+  
+  // Check which modal is open and re-render it
+  const modals = [
+    { id: 'tipsModal', link: 'writingTipsLink' },
+    { id: 'privacyModal', link: 'privacyLink' },
+    { id: 'termsModal', link: 'termsLink' }
+  ];
+  
+  modals.forEach(({ id, link }) => {
+    const modal = document.getElementById(id);
+    if (modal && !modal.classList.contains("hidden")) {
+      document.getElementById(link)?.click();
+    }
+  });
 });
 
 window.addEventListener('DOMContentLoaded', updateLangUI);
@@ -519,11 +791,13 @@ async function renderPosts(postsToRender = null) {
   });
 
   if (posts.length === 0) {
+    const noPostsTitle = currentFilter === "all" ? t('noStoriesYet') : t('noStoriesFound');
+    const noPostsMsg = currentFilter === "all" ? t('storiesWillAppear') : `${t('no')} ${currentFilter}${t('noMatch')}`;
     postsRoot.innerHTML = `
       <div style="text-align:center;padding:60px 20px;color:var(--secondary)">
         <div style="font-size:48px;margin-bottom:16px">📚</div>
-        <h2 style="margin:0 0 12px 0;color:var(--text);font-size:24px">${currentFilter === "all" ? "No Stories Yet" : "No Stories Found"}</h2>
-        <p style="margin:0;font-size:15px">${currentFilter === "all" ? "Stories will appear here once published." : `No ${currentFilter}s match your filter.`}</p>
+        <h2 style="margin:0 0 12px 0;color:var(--text);font-size:24px">${noPostsTitle}</h2>
+        <p style="margin:0;font-size:15px">${noPostsMsg}</p>
       </div>
     `;
     return;
@@ -642,7 +916,7 @@ async function renderPosts(postsToRender = null) {
           <span>${new Date(post.publishedAt?.toDate?.() || new Date()).toLocaleDateString()}</span>
           ${post.category ? `<span class="moodTag" style="background:rgba(67,123,157,0.15);color:#457b9d">${categoryIcon} ${post.category}</span>` : ""}
           ${post.mood ? `<span class="moodTag" style="background:rgba(230,57,70,0.15);color:#e63946">${post.mood}</span>` : ""}
-          <span>by ${escapeHTML(post.authorName)}</span>
+          <span>${t('by')} ${escapeHTML(post.authorName)}</span>
         </div>
       </div>
 
@@ -668,10 +942,10 @@ async function renderPosts(postsToRender = null) {
         </button>
         <button class="saveBtn ${isSaved ? "saved" : ""}" data-post-id="${post.id}" data-saved="${isSaved}">
           <span>🔖</span>
-          <span>${isSaved ? "Saved" : "Save"}</span>
+          <span>${isSaved ? t('saved') : t('save')}</span>
         </button>
         <div class="postMeta">
-          <span>👁️ ${post.views || 0} · ⏱️ ${post.readingTime || 1} min</span>
+          <span>👁️ ${post.views || 0} ${t('viewsCount')} · ⏱️ ${post.readingTime || 1} ${t('minRead')}</span>
         </div>
       </div>
 
@@ -679,7 +953,7 @@ async function renderPosts(postsToRender = null) {
         <h4 style="margin:0 0 16px;font-size:18px;font-weight:600;color:var(--text);">${t('comments')} (${comments.length})</h4>
         <div class="commentList" style="max-height:400px;overflow-y:auto;margin-bottom:16px;">
           ${comments.length === 0 
-            ? '<div class="pf-empty" style="padding:40px 20px;text-align:center;color:var(--text-secondary);">No comments yet</div>' 
+            ? `<div class="pf-empty" style="padding:40px 20px;text-align:center;color:var(--text-secondary);">${t('noCommentsYet')}</div>` 
             : comments.map(renderComment).join('')
           }
         </div>
@@ -744,7 +1018,7 @@ async function renderPosts(postsToRender = null) {
           contentText.innerHTML = shortHtml;
           contentText.dataset.expanded = "false";
           contentText.parentElement.classList.remove("expanded");
-          readMoreBtn.textContent = "More";
+          readMoreBtn.textContent = t('more');
           readMoreBtn.setAttribute("aria-expanded", "false");
           const backTo = Number(contentText.dataset.scrollTop || 0);
           if (Number.isFinite(backTo)) {
@@ -755,7 +1029,7 @@ async function renderPosts(postsToRender = null) {
           contentText.innerHTML = fullHtml;
           contentText.dataset.expanded = "true";
           contentText.parentElement.classList.add("expanded");
-          readMoreBtn.textContent = "Less";
+          readMoreBtn.textContent = t('less');
           readMoreBtn.setAttribute("aria-expanded", "true");
         }
       });
@@ -1302,30 +1576,30 @@ function renderAboutAuthor() {
     <div class="aboutAuthorCard">
       <div class="aboutAuthorAvatar">📚</div>
       <div class="aboutAuthorInfo">
-        <h4>Ahona Islam</h4>
-        <p>Author, Poet & Literary Curator</p>
-        <p style="font-size:12px;color:var(--secondary);margin-top:8px">Passionate storyteller sharing beautiful narratives with the world</p>
+        <h4>${t('aboutTitle')}</h4>
+        <p>${t('aboutSubtitle')}</p>
+        <p style="font-size:12px;color:var(--secondary);margin-top:8px">${t('aboutDescription')}</p>
       </div>
     </div>
 
     <div class="aboutSection">
-      <h5>About</h5>
-      <p>Ahona Islam is a dedicated author and poet committed to crafting meaningful stories, heartfelt poems, and insightful literary works. With a passion for language and storytelling, Ahona creates content that resonates with readers and inspires imagination.</p>
+      <h5>${t('aboutSectionTitle')}</h5>
+      <p>${t('aboutText')}</p>
     </div>
 
     <div class="aboutSection">
-      <h5>Mission</h5>
-      <p>To create a vibrant community where writers and readers connect, share, and celebrate the beauty of literature. Every story is an opportunity to inspire, challenge, and transform perspectives through the power of words.</p>
+      <h5>${t('missionTitle')}</h5>
+      <p>${t('missionText')}</p>
     </div>
 
     <div class="aboutSection">
-      <h5>Categories</h5>
-      <p><strong>Novels</strong> — Immersive long-form narratives exploring human emotions and experiences.<br><strong>Poems</strong> — Lyrical expressions capturing moments, feelings, and reflections.<br><strong>Short Stories</strong> — Concise, powerful tales that deliver impact and insight.</p>
+      <h5>${t('categoriesTitle')}</h5>
+      <p><strong>${t('novelsLabel')}</strong> — ${t('novelsDesc')}<br><strong>${t('poemsLabel')}</strong> — ${t('poemsDesc')}<br><strong>${t('storiesLabel')}</strong> — ${t('storiesDesc')}</p>
     </div>
 
     <div class="aboutSection">
-      <h5>Connect</h5>
-      <p>Follow Ahona for the latest releases, writing updates, and literary discussions across social media. Every story shared is crafted with care and passion for you to enjoy.</p>
+      <h5>${t('connectTitle')}</h5>
+      <p>${t('connectText')}</p>
     </div>
   `;
 
@@ -1417,28 +1691,28 @@ document.getElementById("writingTipsLink")?.addEventListener("click", (e) => {
   const tipsContent = `
     <div style="display:flex;flex-direction:column;gap:20px">
       <div class="tipSection">
-        <h4 style="margin:0 0 10px 0;color:var(--accent-primary);font-size:16px">📖 Story Structure</h4>
-        <p style="margin:0;color:var(--secondary);font-size:14px;line-height:1.7">Start with a compelling hook, develop your characters gradually, create conflict that drives the narrative forward, and resolve with a meaningful ending. Remember, every scene should serve a purpose.</p>
+        <h4 style="margin:0 0 10px 0;color:var(--accent-primary);font-size:16px">📖 ${t('storyStructureTitle')}</h4>
+        <p style="margin:0;color:var(--secondary);font-size:14px;line-height:1.7">${t('storyStructureText')}</p>
       </div>
       <div class="tipSection">
-        <h4 style="margin:0 0 10px 0;color:var(--accent-primary);font-size:16px">✍️ Writing Craft</h4>
-        <p style="margin:0;color:var(--secondary);font-size:14px;line-height:1.7">Show, don't tell. Use vivid descriptions and active verbs. Vary your sentence structure. Read your work aloud to catch awkward phrasing. Edit ruthlessly—the best writers are fierce editors.</p>
+        <h4 style="margin:0 0 10px 0;color:var(--accent-primary);font-size:16px">✍️ ${t('writingCraftTitle')}</h4>
+        <p style="margin:0;color:var(--secondary);font-size:14px;line-height:1.7">${t('writingCraftText')}</p>
       </div>
       <div class="tipSection">
-        <h4 style="margin:0 0 10px 0;color:var(--accent-primary);font-size:16px">💡 Finding Inspiration</h4>
-        <p style="margin:0;color:var(--secondary);font-size:14px;line-height:1.7">Write about what moves you. Observe real life, explore emotions, read widely, and don't be afraid to write badly at first. The magic happens in revision, not the first draft.</p>
+        <h4 style="margin:0 0 10px 0;color:var(--accent-primary);font-size:16px">💡 ${t('inspirationTitle')}</h4>
+        <p style="margin:0;color:var(--secondary);font-size:14px;line-height:1.7">${t('inspirationText')}</p>
       </div>
       <div class="tipSection">
-        <h4 style="margin:0 0 10px 0;color:var(--accent-primary);font-size:16px">🎯 Poetry Tips</h4>
-        <p style="margin:0;color:var(--secondary);font-size:14px;line-height:1.7">Use imagery to evoke emotion. Experiment with rhythm and form. Poetry is about compression—every word matters. Read poetry aloud to feel the cadence.</p>
+        <h4 style="margin:0 0 10px 0;color:var(--accent-primary);font-size:16px">🎯 ${t('poetryTipsTitle')}</h4>
+        <p style="margin:0;color:var(--secondary);font-size:14px;line-height:1.7">${t('poetryTipsText')}</p>
       </div>
       <div class="tipSection">
-        <h4 style="margin:0 0 10px 0;color:var(--accent-primary);font-size:16px">⚡ Short Story Magic</h4>
-        <p style="margin:0;color:var(--secondary);font-size:14px;line-height:1.7">Hook readers immediately. Focus on one central conflict. Every detail counts. Surprise your reader with a twist or revelation. A great short story resonates long after reading.</p>
+        <h4 style="margin:0 0 10px 0;color:var(--accent-primary);font-size:16px">⚡ ${t('shortStoryTitle')}</h4>
+        <p style="margin:0;color:var(--secondary);font-size:14px;line-height:1.7">${t('shortStoryText')}</p>
       </div>
     </div>
   `;
-  openModal("tipsModal", "Writing Tips", tipsContent);
+  openModal("tipsModal", t('writingTipsTitle'), tipsContent);
 });
 
 // Privacy Policy
@@ -1446,25 +1720,25 @@ document.getElementById("privacyLink")?.addEventListener("click", (e) => {
   e.preventDefault();
   const privacyContent = `
     <div style="color:var(--secondary);font-size:13px;line-height:1.8">
-      <h4 style="color:var(--accent-primary);margin-bottom:12px">1. Information We Collect</h4>
-      <p style="margin-bottom:16px">We collect information you provide directly, such as your name, email, username, and profile information. We also automatically collect usage data and analytics about how you interact with our platform.</p>
+      <h4 style="color:var(--accent-primary);margin-bottom:12px">${t('infoCollectTitle')}</h4>
+      <p style="margin-bottom:16px">${t('infoCollectText')}</p>
       
-      <h4 style="color:var(--accent-primary);margin-bottom:12px">2. How We Use Your Information</h4>
-      <p style="margin-bottom:16px">We use your information to provide and improve our services, personalize your experience, communicate with you, and ensure platform security. We never sell or share your data with third parties without consent.</p>
+      <h4 style="color:var(--accent-primary);margin-bottom:12px">${t('infoUseTitle')}</h4>
+      <p style="margin-bottom:16px">${t('infoUseText')}</p>
       
-      <h4 style="color:var(--accent-primary);margin-bottom:12px">3. Data Security</h4>
-      <p style="margin-bottom:16px">Your data is encrypted and stored securely. We implement industry-standard security measures to protect your information from unauthorized access, alteration, or disclosure.</p>
+      <h4 style="color:var(--accent-primary);margin-bottom:12px">${t('dataSecurityTitle')}</h4>
+      <p style="margin-bottom:16px">${t('dataSecurityText')}</p>
       
-      <h4 style="color:var(--accent-primary);margin-bottom:12px">4. Your Rights</h4>
-      <p style="margin-bottom:16px">You have the right to access, modify, or delete your personal data. You can update your profile settings anytime. Contact support for data deletion requests.</p>
+      <h4 style="color:var(--accent-primary);margin-bottom:12px">${t('yourRightsTitle')}</h4>
+      <p style="margin-bottom:16px">${t('yourRightsText')}</p>
       
-      <h4 style="color:var(--accent-primary);margin-bottom:12px">5. Cookies</h4>
-      <p style="margin-bottom:16px">We use cookies to enhance your experience and remember your preferences. You can manage cookie settings in your browser.</p>
+      <h4 style="color:var(--accent-primary);margin-bottom:12px">${t('cookiesTitle')}</h4>
+      <p style="margin-bottom:16px">${t('cookiesText')}</p>
       
-      <p style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-style:italic">Last updated: January 2024</p>
+      <p style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-style:italic">${t('lastUpdated')}</p>
     </div>
   `;
-  openModal("privacyModal", "Privacy Policy", privacyContent);
+  openModal("privacyModal", t('privacyTitle'), privacyContent);
 });
 
 // Terms of Service
@@ -1472,25 +1746,25 @@ document.getElementById("termsLink")?.addEventListener("click", (e) => {
   e.preventDefault();
   const termsContent = `
     <div style="color:var(--secondary);font-size:13px;line-height:1.8">
-      <h4 style="color:var(--accent-primary);margin-bottom:12px">1. User Agreement</h4>
-      <p style="margin-bottom:16px">By using Ahona Islam, you agree to these terms and conditions. If you do not agree, please do not use our services. We reserve the right to modify these terms at any time.</p>
+      <h4 style="color:var(--accent-primary);margin-bottom:12px">${t('userAgreementTitle')}</h4>
+      <p style="margin-bottom:16px">${t('userAgreementText')}</p>
       
-      <h4 style="color:var(--accent-primary);margin-bottom:12px">2. Content Ownership</h4>
-      <p style="margin-bottom:16px">You retain full ownership of the content you create and publish. By publishing on our platform, you grant us a license to display your work to the community. All content is protected by copyright.</p>
+      <h4 style="color:var(--accent-primary);margin-bottom:12px">${t('contentOwnershipTitle')}</h4>
+      <p style="margin-bottom:16px">${t('contentOwnershipText')}</p>
       
-      <h4 style="color:var(--accent-primary);margin-bottom:12px">3. Community Guidelines</h4>
-      <p style="margin-bottom:16px">Be respectful. No harassment, hate speech, or inappropriate content. Respect others' intellectual property. Violations may result in content removal or account suspension.</p>
+      <h4 style="color:var(--accent-primary);margin-bottom:12px">${t('communityGuidelinesTitle')}</h4>
+      <p style="margin-bottom:16px">${t('communityGuidelinesText')}</p>
       
-      <h4 style="color:var(--accent-primary);margin-bottom:12px">4. Acceptable Use</h4>
-      <p style="margin-bottom:16px">Do not use the platform for illegal activities, spam, malware, or unauthorized access. Do not plagiarize or claim others' work as your own.</p>
+      <h4 style="color:var(--accent-primary);margin-bottom:12px">${t('acceptableUseTitle')}</h4>
+      <p style="margin-bottom:16px">${t('acceptableUseText')}</p>
       
-      <h4 style="color:var(--accent-primary);margin-bottom:12px">5. Liability Disclaimer</h4>
-      <p style="margin-bottom:16px">Ahona Islam is provided "as is" without warranties. We are not liable for indirect damages or lost data. Users assume all risks of platform use.</p>
+      <h4 style="color:var(--accent-primary);margin-bottom:12px">${t('liabilityTitle')}</h4>
+      <p style="margin-bottom:16px">${t('liabilityText')}</p>
       
-      <p style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-style:italic">Last updated: January 2024</p>
+      <p style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-style:italic">${t('lastUpdated')}</p>
     </div>
   `;
-  openModal("termsModal", "Terms of Service", termsContent);
+  openModal("termsModal", t('termsTitle'), termsContent);
 });
 
 // Popular Tags

@@ -157,13 +157,13 @@
     <section class="filterSection">
       <div class="searchBar">
         <span class="searchIcon">🔍</span>
-        <input type="text" id="searchInput" placeholder="Search stories, poems, or novels..." />
+        <input type="text" id="searchInput" placeholder="Search stories, poems, or novels..." data-i18n="searchPlaceholder" />
       </div>
       <div class="categoryFilters">
-        <button class="filterBtn active" data-category="all">All Stories</button>
-        <button class="filterBtn" data-category="Novel">📖 Novels</button>
-        <button class="filterBtn" data-category="Poem">✍️ Poems</button>
-        <button class="filterBtn" data-category="Short Story">📝 Short Stories</button>
+        <button class="filterBtn active" data-category="all" data-i18n="all">All Stories</button>
+        <button class="filterBtn" data-category="Novel" data-i18n="novel">📖 Novels</button>
+        <button class="filterBtn" data-category="Poem" data-i18n="poem">✍️ Poems</button>
+        <button class="filterBtn" data-category="Short Story" data-i18n="story">📝 Short Stories</button>
       </div>
     </section>
 
@@ -273,7 +273,7 @@
     <div id="aboutModal" class="modal hidden">
       <div class="modalContent aboutModalContent">
         <div class="modalHeader">
-          <h3 id="aboutTitle">📌About Ahona Islam</h3>
+          <h3 id="aboutTitle" data-i18n="aboutTitle">📌About Ahona Islam</h3>
           <button type="button" class="closeBtn" id="closeAbout">✕</button>
         </div>
         <div id="aboutContent" class="modalBody"></div>
@@ -284,7 +284,7 @@
     <div id="faqModal" class="modal hidden">
       <div class="modalContent faqModalContent">
         <div class="modalHeader">
-          <h3>❓ Frequently Asked Questions</h3>
+          <h3 data-i18n="faqTitle">❓ Frequently Asked Questions</h3>
           <button type="button" class="closeBtn" id="closeFaq">✕</button>
         </div>
         <div class="modalBody" id="faqContent"></div>
@@ -295,7 +295,7 @@
     <div id="tipsModal" class="modal hidden">
       <div class="modalContent tipsModalContent">
         <div class="modalHeader">
-          <h3>✍️ Writing Tips & Guides</h3>
+          <h3 data-i18n="writingTipsTitle">✍️ Writing Tips & Guides</h3>
           <button type="button" class="closeBtn" id="closeTips">✕</button>
         </div>
         <div class="modalBody" id="tipsContent"></div>
@@ -306,7 +306,7 @@
     <div id="privacyModal" class="modal hidden">
       <div class="modalContent privacyModalContent">
         <div class="modalHeader">
-          <h3>🔒 Privacy Policy</h3>
+          <h3 data-i18n="privacyTitle">🔒 Privacy Policy</h3>
           <button type="button" class="closeBtn" id="closePrivacy">✕</button>
         </div>
         <div class="modalBody" id="privacyContent"></div>
@@ -317,7 +317,7 @@
     <div id="termsModal" class="modal hidden">
       <div class="modalContent termsModalContent">
         <div class="modalHeader">
-          <h3>📜 Terms of Service</h3>
+          <h3 data-i18n="termsTitle">📜 Terms of Service</h3>
           <button type="button" class="closeBtn" id="closeTerms">✕</button>
         </div>
         <div class="modalBody" id="termsContent"></div>
@@ -328,7 +328,7 @@
     <div id="tagsModal" class="modal hidden">
       <div class="modalContent tagsModalContent">
         <div class="modalHeader">
-          <h3>🏷️ Popular Tags</h3>
+          <h3 data-i18n="popularTagsTitle">🏷️ Popular Tags</h3>
           <button type="button" class="closeBtn" id="closeTags">✕</button>
         </div>
         <div class="modalBody" id="tagsContent"></div>
@@ -340,8 +340,8 @@
   <footer class="footer">
     <div class="footerContent">
       <div class="footerSection">
-        <h3 class="footerBrand">📚 Ahona Islam</h3>
-        <p class="footerDescription">A platform dedicated to sharing beautiful stories, poems, and literary works that inspire and connect readers worldwide.</p>
+        <h3 class="footerBrand" data-i18n="footerBrand">📚 Ahona Islam</h3>
+        <p class="footerDescription" data-i18n="footerDescription">A platform dedicated to sharing beautiful stories, poems, and literary works that inspire and connect readers worldwide.</p>
         <div class="footerSocials">
           <a href="#" aria-label="Twitter" class="socialLink" target="_blank" rel="noopener">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M22.46 5.924c-.793.352-1.646.59-2.542.698a4.48 4.48 0 0 0 1.965-2.475 8.94 8.94 0 0 1-2.828 1.082A4.48 4.48 0 0 0 16.11 4c-2.48 0-4.49 2.015-4.49 4.5 0 .353.04.697.116 1.025C7.728 9.37 4.1 7.6 1.67 4.905a4.48 4.48 0 0 0-.61 2.264c0 1.563.796 2.944 2.01 3.755a4.47 4.47 0 0 1-2.034-.563v.057c0 2.183 1.553 4.004 3.617 4.42a4.5 4.5 0 0 1-2.027.077c.572 1.785 2.23 3.084 4.196 3.12A8.98 8.98 0 0 1 2 19.54a12.67 12.67 0 0 0 6.88 2.017c8.26 0 12.785-6.84 12.785-12.775 0-.195-.004-.39-.013-.583A9.22 9.22 0 0 0 24 4.59a8.98 8.98 0 0 1-2.54.697z" fill="#1DA1F2"/></svg>
@@ -355,31 +355,31 @@
         </div>
       </div>
       <div class="footerSection">
-        <h4>Quick Links</h4>
+        <h4 data-i18n="quickLinks">Quick Links</h4>
         <ul class="footerLinks">
-          <li><a href="#" id="browseStoriesLink">Browse Stories</a></li>
-          <li><a href="#" id="categoriesLink">Categories</a></li>
-          <li><a href="#" id="popularTagsLink">Popular Tags</a></li>
-          <li><a href="#" id="communityLink">Community</a></li>
+          <li><a href="#" id="browseStoriesLink" data-i18n="browseStories">Browse Stories</a></li>
+          <li><a href="#" id="categoriesLink" data-i18n="categories">Categories</a></li>
+          <li><a href="#" id="popularTagsLink" data-i18n="popularTags">Popular Tags</a></li>
+          <li><a href="#" id="communityLink" data-i18n="community">Community</a></li>
         </ul>
       </div>
       <div class="footerSection">
-        <h4>Resources</h4>
+        <h4 data-i18n="resources">Resources</h4>
         <ul class="footerLinks">
-          <li><a href="#" id="writingTipsLink">Writing Tips</a></li>
-          <li><a href="#" id="faqLink">FAQ</a></li>
-          <li><a href="#" id="privacyLink">Privacy Policy</a></li>
-          <li><a href="#" id="termsLink">Terms of Service</a></li>
+          <li><a href="#" id="writingTipsLink" data-i18n="writingTips">Writing Tips</a></li>
+          <li><a href="#" id="faqLink" data-i18n="faq">FAQ</a></li>
+          <li><a href="#" id="privacyLink" data-i18n="privacyPolicy">Privacy Policy</a></li>
+          <li><a href="#" id="termsLink" data-i18n="termsOfService">Terms of Service</a></li>
         </ul>
       </div>
       <div class="footerSection">
-        <h4>About</h4>
-        <button id="aboutAuthorBtn" class="footerAboutBtn">About Ahona Islam</button>
-        <p class="footerMeta">Empowering writers and readers since 2024</p>
+        <h4 data-i18n="about">About</h4>
+        <button id="aboutAuthorBtn" class="footerAboutBtn" data-i18n="aboutAhonaIslam">About Ahona Islam</button>
+        <p class="footerMeta" data-i18n="footerMeta">Empowering writers and readers since 2024</p>
       </div>
     </div>
     <div class="footerBottom">
-      <p>&copy; 2026 Ahona Islam. All stories and content are protected by copyright. Built with passion for storytelling.</p>
+      <p data-i18n="footerCopyright">&copy; 2026 Ahona Islam. All stories and content are protected by copyright. Built with passion for storytelling.</p>
     </div>
   </footer>
 
