@@ -565,26 +565,37 @@ async function renderPosts(postsToRender = null) {
       const replies = commentsByParent[c.id] || [];
       const likeCount = c.likes || 0;
       const isLiked = c.likedByCurrentUser || false;
+      // Handle Firestore Timestamp
+      let dateStr = '';
+      if (c.createdAt) {
+        try {
+          const date = c.createdAt.toDate ? c.createdAt.toDate() : new Date(c.createdAt);
+          dateStr = date.toLocaleString();
+        } catch (e) {
+          dateStr = '';
+        }
+      }
       return `
-        <div class="commentBox${c.parentId ? ' reply' : ''}" style="background:${c.parentId ? 'var(--bg-secondary, #f7f7fa)' : 'var(--bg-primary, #fff)'};border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-            <div class="commentAvatar" style="width:32px;height:32px;border-radius:50%;background:#e3e3e3;display:flex;align-items:center;justify-content:center;font-weight:700;color:#457b9d;font-size:15px;">
+        <div class="commentBox${c.parentId ? ' reply' : ''}" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px;transition:all 0.2s;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+            <div class="commentAvatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent-primary),var(--accent-secondary));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
               ${escapeHTML((c.userName||'A').charAt(0).toUpperCase())}
             </div>
             <div style="flex:1;">
-              <span class="commentName" style="font-weight:600;color:#222;font-size:15px;">${escapeHTML(c.userName)}</span>
-              <span style="color:#aaa;font-size:12px;margin-left:8px;">${c.createdAt ? new Date(c.createdAt).toLocaleString() : ''}</span>
+              <span class="commentName" style="font-weight:600;color:var(--text);font-size:15px;">${escapeHTML(c.userName || 'Anonymous')}</span>
+              <span style="color:var(--text-secondary);font-size:12px;margin-left:8px;">${dateStr}</span>
             </div>
           </div>
-          <div class="commentText" style="margin-bottom:10px;color:#333;font-size:14px;line-height:1.7;">${escapeHTML(c.text)}</div>
-          <div class="commentActions" style="display:flex;align-items:center;gap:12px;">
-            <button class="commentLikeBtn${isLiked ? ' liked' : ''}" data-comment-id="${c.id}" data-liked="${isLiked}" style="background:none;border:none;cursor:pointer;color:${isLiked ? '#e63946' : '#aaa'};font-size:16px;transition:color 0.2s;">♡</button>
-            <span class="commentLikeCount" style="font-size:13px;color:#888;">${likeCount}</span>
-            <button class="replyBtn" data-comment-id="${c.id}" style="background:none;border:none;cursor:pointer;color:#457b9d;font-size:13px;">Reply</button>
+          <div class="commentText" style="margin-bottom:12px;color:var(--text);font-size:14px;line-height:1.7;">${escapeHTML(c.text || '')}</div>
+          <div class="commentActions" style="display:flex;align-items:center;gap:16px;">
+            <button class="commentLikeBtn${isLiked ? ' liked' : ''}" data-comment-id="${c.id}" data-liked="${isLiked}" style="background:none;border:none;cursor:pointer;color:${isLiked ? '#e63946' : 'var(--text-secondary)'};font-size:18px;transition:all 0.2s;display:flex;align-items:center;gap:4px;">
+              <span>♥</span>
+              <span class="commentLikeCount" style="font-size:13px;">${likeCount}</span>
+            </button>
           </div>
           ${
             replies.length > 0
-              ? `<div class="commentReplies" style="margin-top:12px;padding-left:18px;border-left:2px solid #f0f0f0;">${replies
+              ? `<div class="commentReplies" style="margin-top:12px;padding-left:20px;border-left:3px solid var(--accent-primary);">${replies
                   .map(renderComment)
                   .join('')}</div>`
               : ''
@@ -592,6 +603,8 @@ async function renderPosts(postsToRender = null) {
         </div>`;
     }
     const allComments = commentsByParent[null] || [];
+    console.log(`[renderPosts] Post ${post.id} - Top-level comments to render: ${allComments.length}`, allComments);
+    
     const commentsHTML =
       allComments.length === 0
         ? '<div class="pf-empty">No comments yet</div>'
@@ -639,58 +652,47 @@ async function renderPosts(postsToRender = null) {
           <span class="heart">♥</span>
           <span class="count">${post.likes || 0}</span>
         </button>
+        <button class="toggleCommentsBtn" data-post-id="${post.id}" style="background:var(--accent-primary);color:#fff;">
+          <span>💬</span>
+          <span class="commentCount">${comments.length}</span>
+        </button>
         <button class="saveBtn ${isSaved ? "saved" : ""}" data-post-id="${post.id}" data-saved="${isSaved}">
           <span>🔖</span>
           <span>${isSaved ? "Saved" : "Save"}</span>
         </button>
-        <button class="openCommentsBtn" data-post-id="${post.id}">💬 ${t('comments')} (${comments.length})</button>
         <div class="postMeta">
           <span>👁️ ${post.views || 0} · ⏱️ ${post.readingTime || 1} min</span>
         </div>
       </div>
 
-      <div class="commentsModal modal hidden" id="commentsModal-${post.id}" aria-hidden="true">
-        <div class="modal-content">
-          <button class="closeCommentsModal" aria-label="Close">×</button>
-          <h3>${t('comments')}</h3>
-          <div class="commentList">
-            ${allComments.length === 0 
-              ? '<div class="pf-empty" style="padding:20px;text-align:center;color:#888;">No comments yet</div>' 
-              : allComments.map(renderComment).join('')
-            }
-          </div>
-          <form class="commentForm" data-post-id="${post.id}">
-            ${auth.currentUser ? "" : `<input name="name" placeholder="Name (optional)"/>`}
-            <textarea name="text" placeholder="${t('commentPlaceholder')}"></textarea>
-            <button type="submit">${t('commentBtn')}</button>
-          </form>
+      <div class="commentsSection" id="commentsSection-${post.id}" style="display:none;padding:20px;background:var(--card);border-radius:12px;border:1px solid var(--border);margin-top:16px;">
+        <h4 style="margin:0 0 16px;font-size:18px;font-weight:600;color:var(--text);">${t('comments')} (${comments.length})</h4>
+        <div class="commentList" style="max-height:400px;overflow-y:auto;margin-bottom:16px;">
+          ${comments.length === 0 
+            ? '<div class="pf-empty" style="padding:40px 20px;text-align:center;color:var(--text-secondary);">No comments yet</div>' 
+            : comments.map(renderComment).join('')
+          }
         </div>
+        <form class="commentForm" data-post-id="${post.id}" style="margin-top:0;padding-top:16px;border-top:1px solid var(--border);">
+          ${auth.currentUser ? "" : `<input name="name" placeholder="Your name" style="width:100%;padding:12px;margin-bottom:12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:14px;"/>`}
+          <textarea name="text" placeholder="${t('commentPlaceholder') || 'Write a kind thought...'}" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);min-height:100px;resize:vertical;font-size:14px;font-family:inherit;"></textarea>
+          <button type="submit" style="margin-top:12px;padding:10px 24px;background:linear-gradient(90deg,var(--accent-primary),var(--accent-secondary));color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;transition:transform 0.2s;">${t('commentBtn') || 'Comment'}</button>
+        </form>
       </div>
     `;
 
     postsRoot.appendChild(el);
 
     // Comments modal open/close logic
-    const openCommentsBtn = el.querySelector('.openCommentsBtn');
-    const commentsModal = el.querySelector('.commentsModal');
-    const closeCommentsModal = el.querySelector('.closeCommentsModal');
-    if (openCommentsBtn && commentsModal && closeCommentsModal) {
-      openCommentsBtn.addEventListener('click', () => {
-        commentsModal.classList.remove('hidden');
-        commentsModal.setAttribute('aria-hidden', 'false');
-      });
-      closeCommentsModal.addEventListener('click', () => {
-        // Blur the button before hiding to avoid focus issues
-        closeCommentsModal.blur();
-        commentsModal.classList.add('hidden');
-        commentsModal.setAttribute('aria-hidden', 'true');
-      });
-      // Optional: close modal on background click
-      commentsModal.addEventListener('click', (e) => {
-        if (e.target === commentsModal) {
-          commentsModal.classList.add('hidden');
-          commentsModal.setAttribute('aria-hidden', 'true');
-        }
+    // Toggle comments section
+    const toggleCommentsBtn = el.querySelector('.toggleCommentsBtn');
+    const commentsSection = el.querySelector('.commentsSection');
+    if (toggleCommentsBtn && commentsSection) {
+      toggleCommentsBtn.addEventListener('click', () => {
+        const isHidden = commentsSection.style.display === 'none';
+        commentsSection.style.display = isHidden ? 'block' : 'none';
+        toggleCommentsBtn.style.background = isHidden ? 'var(--accent-secondary)' : 'var(--accent-primary)';
+        toggleCommentsBtn.style.transform = isHidden ? 'scale(1.05)' : 'scale(1)';
       });
     }
 
@@ -958,9 +960,10 @@ async function renderPosts(postsToRender = null) {
           : allComments.map(renderComment).join('');
         
         // Also update comment count button
-        const openCommentsBtn = el.querySelector('.openCommentsBtn');
-        if (openCommentsBtn) {
-          openCommentsBtn.textContent = `💬 ${t('comments')} (${freshComments.length})`;
+        const toggleCommentsBtn = el.querySelector('.toggleCommentsBtn');
+        const commentCountSpan = toggleCommentsBtn?.querySelector('.commentCount');
+        if (commentCountSpan) {
+          commentCountSpan.textContent = freshComments.length;
         }
         
       } catch (err) {
