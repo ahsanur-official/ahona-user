@@ -24,6 +24,10 @@
   transform: scale(0.98);
 }
 
+.toggleCommentsBtn{
+  cursor: pointer;
+}
+
 .commentsModal.modal {
   position: fixed;
   bottom: 0;
@@ -126,6 +130,8 @@
   min-height: 60px;
   transition: border 0.2s;
 }
+
+
 .commentsModal .commentForm textarea:focus {
   border: 1.5px solid var(--accent-tertiary);
   outline: none;
@@ -1903,6 +1909,7 @@ body.dark #toggleTheme{
   cursor:pointer;
   display:-webkit-box;
   -webkit-line-clamp:3;
+  line-clamp:3;
   -webkit-box-orient:vertical;
   overflow:hidden;
   letter-spacing:0.2px;
@@ -1955,6 +1962,7 @@ body.dark #toggleTheme{
   flex-grow:1;
   display:-webkit-box;
   -webkit-line-clamp:4;
+  line-clamp:4;
   -webkit-box-orient:vertical;
   overflow:hidden;
   text-align:justify;
@@ -1966,6 +1974,7 @@ body.dark #toggleTheme{
 .postContent.expanded{
   display:block;
   -webkit-line-clamp:unset;
+  line-clamp:unset;
   overflow:visible;
 }
 

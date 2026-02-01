@@ -652,8 +652,8 @@ async function renderPosts(postsToRender = null) {
           <span class="heart">♥</span>
           <span class="count">${post.likes || 0}</span>
         </button>
-        <button class="toggleCommentsBtn" data-post-id="${post.id}" style="background:var(--accent-primary);color:#fff;">
-          <span>💬</span>
+        <button class="toggleCommentsBtn" data-post-id="${post.id}" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border-radius:8px;padding:8px 16px;display:flex;align-items:center;gap:6px;font-weight:600;box-shadow:0 2px 8px rgba(102,126,234,0.3);transition:all 0.3s ease;">
+          <span style="font-size:16px;">💬</span>
           <span class="commentCount">${comments.length}</span>
         </button>
         <button class="saveBtn ${isSaved ? "saved" : ""}" data-post-id="${post.id}" data-saved="${isSaved}">
@@ -691,28 +691,32 @@ async function renderPosts(postsToRender = null) {
       toggleCommentsBtn.addEventListener('click', () => {
         const isHidden = commentsSection.style.display === 'none';
         commentsSection.style.display = isHidden ? 'block' : 'none';
-        toggleCommentsBtn.style.background = isHidden ? 'var(--accent-secondary)' : 'var(--accent-primary)';
-        toggleCommentsBtn.style.transform = isHidden ? 'scale(1.05)' : 'scale(1)';
+        toggleCommentsBtn.style.background = isHidden ? 'linear-gradient(135deg,#764ba2 0%,#667eea 100%)' : 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)';
+        toggleCommentsBtn.style.transform = isHidden ? 'translateY(-2px)' : 'translateY(0)';
+        toggleCommentsBtn.style.boxShadow = isHidden ? '0 4px 12px rgba(102,126,234,0.4)' : '0 2px 8px rgba(102,126,234,0.3)';
       });
     }
 
     // Add like handler for all comment like buttons
     el.querySelectorAll('.commentLikeBtn').forEach(btn => {
-      const likeCount = btn.nextElementSibling;
       btn.addEventListener('click', function() {
+        const likeCountSpan = btn.querySelector('.commentLikeCount');
         const isLiked = btn.dataset.liked === 'true';
-        let count = parseInt(likeCount.textContent) || 0;
+        let count = parseInt(likeCountSpan.textContent) || 0;
+        
         // Instant UI update
         if (isLiked) {
           btn.dataset.liked = 'false';
           btn.classList.remove('liked');
+          btn.style.color = 'var(--text-secondary)';
           count = Math.max(0, count - 1);
         } else {
           btn.dataset.liked = 'true';
           btn.classList.add('liked');
+          btn.style.color = '#e63946';
           count = count + 1;
         }
-        likeCount.textContent = String(count);
+        likeCountSpan.textContent = String(count);
         // TODO: Sync with backend (addCommentLike/unlikeCommentLike)
       });
     });
