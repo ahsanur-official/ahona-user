@@ -106,6 +106,10 @@ const translations = {
     story: "Short Story",
     searchPlaceholder: "Search stories...",
     featuredStories: "Featured Stories",
+    brand: "Ahona Islam",
+    pageTitle: "Ahona Islam's Stories World..",
+    heroTitle: "💖..Welcome to the Ahona Islam's Stories World..💖",
+    heroSubtitle: "Discover beautiful novels, poems, short stories | Join our community of readers | Keep updated with the latest releases | Explore more every day | Keep your favorite stories handy | Share your thoughts and reviews | Connect with fellow readers | Dive into a world of imagination | Find your next favorite read | Stories that touch your heart | Inspiration at your fingertips | Endless adventures await | Where stories come alive | Your gateway to literary wonders | Unlock the magic of storytelling | A haven for book lovers | Fuel your passion for reading | keep supporting Ahona Islam!",
     english: "English",
     bangla: "বাংলা",
     no: "No",
@@ -171,8 +175,6 @@ const translations = {
     popularTagsTitle: "Popular Tags",
     // Terms of Service Modal
     termsTitle: "Terms of Service",
-    faqTitle: "Frequently Asked Questions",
-    popularTagsTitle: "Popular Tags",
     userAgreementTitle: "1. User Agreement",
     userAgreementText: "By using Ahona Islam, you agree to these terms and conditions. If you do not agree, please do not use our services. We reserve the right to modify these terms at any time.",
     contentOwnershipTitle: "2. Content Ownership",
@@ -216,6 +218,10 @@ const translations = {
     story: "ছোট গল্প",
     searchPlaceholder: "গল্প খুঁজুন...",
     featuredStories: "বিশেষ গল্পসমূহ",
+    brand: "অহনা ইসলাম",
+    pageTitle: "অহনা ইসলামের গল্পের জগত..",
+    heroTitle: "💖..অহনা ইসলামের গল্পের জগতে স্বাগতম..💖",
+    heroSubtitle: "ভালবাসা দিয়ে গড়া সুন্দর উপন্যাস, কবিতা এবং ছোট গল্প আবিষ্কার করুন | আমাদের পাঠক সম্প্রদায়ে যোগ দিন | সর্বশেষ প্রকাশনা সম্পর্কে আপডেট থাকুন | প্রতিদিন আরও অন্বেষণ করুন | আপনার প্রিয় গল্পগুলি সাথে রাখুন | আপনার চিন্তাভাবনা এবং পর্যালোচনা শেয়ার করুন | সহ-পাঠকদের সাথে সংযুক্ত হন | কল্পনার জগতে ডুব দিন | আপনার পরবর্তী প্রিয় পড়া খুঁজে নিন | গল্প যা আপনার হৃদয় স্পর্শ করে | আপনার আঙুলের ডগায় অনুপ্রেরণা | অসীম রোমাঞ্চ অপেক্ষা করছে | যেখানে গল্পগুলি জীবন্ত হয়ে ওঠে | সাহিত্যিক বিস্ময়ের আপনার প্রবেশদ্বার | গল্প বলার জাদু আনলক করুন | বই প্রেমীদের জন্য একটি আশ্রয় | পড়ার প্রতি আপনার আবেগকে জ্বালান | অহনা ইসলামকে সমর্থন করতে থাকুন!",
     english: "English",
     bangla: "বাংলা",
     no: "কোনো",
@@ -277,8 +283,7 @@ const translations = {
     cookiesTitle: "৫. কুকিজ",
     cookiesText: "আমরা আপনার অভিজ্ঞতা বাড়াতে এবং আপনার পছন্দগুলি মনে রাখতে কুকিজ ব্যবহার করি। আপনি আপনার ব্রাউজারে কুকি সেটিংস পরিচালনা করতে পারেন।",
     lastUpdated: "সর্বশেষ আপডেট: জানুয়ারি ২০২২",
-    faqTitle: "সাধারণ প्रश्न ও উत्तर",
-    popularTagsTitle: "জনপ্রিয় ট্যাগ",
+
     // Terms of Service Modal
     termsTitle: "সেবার শর্তাবলী",
     userAgreementTitle: "১. ব্যবহারকারী চুক্তি",
@@ -363,6 +368,12 @@ function updateLangUI() {
         // Preserve icons
         const icon = el.textContent.match(/[📖✍️📝👤❤️⚙️🚪🌐]/)?.[0] || '';
         el.textContent = icon ? icon + ' ' + t(key) : t(key);
+        
+        // Update typewriter data-phrases if element has that attribute
+        if (el.classList.contains('typewriterTarget') && el.dataset.phrases) {
+          el.dataset.phrases = t(key);
+          el.textContent = t(key).split('|')[0].trim();
+        }
       }
     }
   });
@@ -372,6 +383,11 @@ document.getElementById('langToggleBtn')?.addEventListener('click', () => {
   currentLang = currentLang === 'en' ? 'bn' : 'en';
   localStorage.setItem(LANG_KEY, currentLang);
   updateLangUI();
+  document.title = t('pageTitle');
+  
+  // Reinitialize typewriter with new language
+  initTypewriter();
+  
   renderPosts(); // re-render to update button labels
   
   // Update open modals
@@ -395,7 +411,10 @@ document.getElementById('langToggleBtn')?.addEventListener('click', () => {
   });
 });
 
-window.addEventListener('DOMContentLoaded', updateLangUI);
+window.addEventListener('DOMContentLoaded', () => {
+  updateLangUI();
+  document.title = t('pageTitle');
+});
 
 // ============================================
 // Helpers
@@ -1451,9 +1470,13 @@ registerForm.addEventListener("submit", async (e) => {
 
   try {
     await registerUser(email, password, username, fullName);
-    authModalOverlay.classList.add("hidden");
     registerForm.reset();
-    showNotification("✅ Account created successfully!", "success");
+    showNotification("✅ Account created successfully! Please log in.", "success");
+    
+    // Automatically switch to login form
+    setTimeout(() => {
+      switchToLogin();
+    }, 500);
   } catch (error) {
     showNotification(`❌ ${error.message}`, "error");
   }
