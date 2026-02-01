@@ -504,6 +504,22 @@ async function deleteDraft(draftId) {
 
 async function likePost(postId, userId) {
   try {
+    console.log(`[likePost] Starting - postId: ${postId}, userId: ${userId}`);
+    
+    if (!userId || userId === "") {
+      console.error("[likePost] Error: userId is empty");
+      return false;
+    }
+    
+    // First, verify post exists
+    const postRef = doc(db, "posts", postId);
+    const postSnap = await getDoc(postRef);
+    if (!postSnap.exists()) {
+      console.error(`[likePost] Post does not exist: ${postId}`);
+      return false;
+    }
+    console.log(`[likePost] Post exists, likes field: ${postSnap.data().likes}`);
+    
     // Check if already liked
     const q = query(
       collection(db, "likes"),
@@ -511,31 +527,48 @@ async function likePost(postId, userId) {
       where("userId", "==", userId),
     );
     const querySnapshot = await getDocs(q);
+    console.log(`[likePost] Query result - found ${querySnapshot.docs.length} existing likes`);
 
     if (querySnapshot.empty) {
       // Add like
-      await addDoc(collection(db, "likes"), {
+      const likeRef = await addDoc(collection(db, "likes"), {
         postId: postId,
         userId: userId,
         createdAt: serverTimestamp(),
       });
+      console.log(`[likePost] Like document created with ID: ${likeRef.id}`);
 
       // Increment post like count
-      await updateDoc(doc(db, "posts", postId), {
+      await updateDoc(postRef, {
         likes: increment(1),
       });
+      console.log(`[likePost] Post likes incremented`);
 
       return true;
     }
+    console.log(`[likePost] Post already liked by this user`);
     return false;
   } catch (error) {
-    console.error("Error liking post:", error);
+    console.error("[likePost] ERROR:", error.code || error.message || error);
+    if (error.code === "permission-denied") {
+      console.error("[likePost] Permission denied! Check Firestore security rules");
+    }
     return false;
   }
 }
 
 async function unlikePost(postId, userId) {
   try {
+    console.log(`[unlikePost] Starting - postId: ${postId}, userId: ${userId}`);
+    
+    // Verify post exists
+    const postRef = doc(db, "posts", postId);
+    const postSnap = await getDoc(postRef);
+    if (!postSnap.exists()) {
+      console.error(`[unlikePost] Post does not exist: ${postId}`);
+      return false;
+    }
+    
     // Find like document
     const q = query(
       collection(db, "likes"),
@@ -543,35 +576,45 @@ async function unlikePost(postId, userId) {
       where("userId", "==", userId),
     );
     const querySnapshot = await getDocs(q);
+    console.log(`[unlikePost] Found ${querySnapshot.docs.length} likes to delete`);
 
     if (!querySnapshot.empty) {
       // Delete like
       const likeDocId = querySnapshot.docs[0].id;
       await deleteDoc(doc(db, "likes", likeDocId));
+      console.log(`[unlikePost] Like document deleted: ${likeDocId}`);
 
       // Decrement post like count
-      await updateDoc(doc(db, "posts", postId), {
+      await updateDoc(postRef, {
         likes: increment(-1),
       });
+      console.log(`[unlikePost] Post likes decremented`);
 
       return true;
     }
+    console.log(`[unlikePost] No like found for this user`);
     return false;
   } catch (error) {
-    console.error("Error unliking post:", error);
+    console.error("[unlikePost] ERROR:", error.code || error.message || error);
+    if (error.code === "permission-denied") {
+      console.error("[unlikePost] Permission denied! Check Firestore security rules");
+    }
     return false;
   }
 }
 
 async function isPostLikedByUser(postId, userId) {
   try {
+    console.log(`[isPostLikedByUser] Checking - postId: ${postId}, userId: ${userId}`);
     const q = query(
       collection(db, "likes"),
       where("postId", "==", postId),
       where("userId", "==", userId),
     );
     const querySnapshot = await getDocs(q);
-    return !querySnapshot.empty;
+    const isLiked = !querySnapshot.empty;
+    console.log(`[isPostLikedByUser] Result: ${isLiked} (found ${querySnapshot.docs.length} likes)`);
+    return isLiked;
   } catch (error) {
     console.error("Error checking like status:", error);
     return false;
@@ -584,6 +627,27 @@ async function isPostLikedByUser(postId, userId) {
 
 async function addComment(postId, userId, userName, text) {
   try {
+    console.log(`[addComment] Starting - postId: ${postId}, userId: ${userId}, userName: ${userName}, text: ${text.substring(0, 50)}...`);
+    
+    if (!userId || userId === "") {
+      console.error("[addComment] Error: userId is empty");
+      return null;
+    }
+    
+    if (!text || text.trim() === "") {
+      console.error("[addComment] Error: text is empty");
+      return null;
+    }
+    
+    // First, verify post exists
+    const postRef = doc(db, "posts", postId);
+    const postSnap = await getDoc(postRef);
+    if (!postSnap.exists()) {
+      console.error(`[addComment] Post does not exist: ${postId}`);
+      return null;
+    }
+    console.log(`[addComment] Post exists, comments field: ${postSnap.data().comments}`);
+    
     const docRef = await addDoc(collection(db, "comments"), {
       postId: postId,
       userId: userId,
@@ -593,32 +657,46 @@ async function addComment(postId, userId, userName, text) {
       createdAt: serverTimestamp(),
       likes: 0,
     });
+    console.log(`[addComment] Comment created with ID: ${docRef.id}`);
 
     // Increment post comment count
-    await updateDoc(doc(db, "posts", postId), {
+    await updateDoc(postRef, {
       comments: increment(1),
     });
+    console.log(`[addComment] Post comments incremented`);
 
     return docRef.id;
   } catch (error) {
-    console.error("Error adding comment:", error);
+    console.error("[addComment] ERROR:", error.code || error.message || error);
+    if (error.code === "permission-denied") {
+      console.error("[addComment] Permission denied! Check Firestore security rules");
+    }
     return null;
   }
 }
 
 async function getPostComments(postId) {
   try {
+    console.log(`[getPostComments] Fetching comments for post: ${postId}`);
     const q = query(
       collection(db, "comments"),
-      where("postId", "==", postId),
-      orderBy("createdAt", "desc"),
+      where("postId", "==", postId)
     );
     const querySnapshot = await getDocs(q);
-    // return comments with parentId support so UI can render threads
-    return querySnapshot.docs.map((doc) => ({
+    let comments = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
+    
+    // Sort manually by createdAt (newest first)
+    comments.sort((a, b) => {
+      const aTime = a.createdAt?.toMillis?.() || 0;
+      const bTime = b.createdAt?.toMillis?.() || 0;
+      return bTime - aTime;
+    });
+    
+    console.log(`[getPostComments] Found ${comments.length} comments for post: ${postId}`);
+    return comments;
   } catch (error) {
     console.error("Error getting comments:", error);
     return [];

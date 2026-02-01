@@ -159,7 +159,7 @@ function showNotification(message, type = "info") {
   setTimeout(() => {
     notification.style.animation = "notificationSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
     setTimeout(() => notification.remove(), 300);
-  }, 500);
+  }, 800);
 }
 
 // In-app notification center (simple, client-side)
@@ -494,6 +494,8 @@ async function renderFeaturedPosts() {
 // Render Posts
 // ============================================
 async function renderPosts(postsToRender = null) {
+  console.log(`[renderPosts] Starting - postsToRender: ${postsToRender ? postsToRender.length : 'null'}, currentUser: ${auth.currentUser?.uid || 'not logged in'}`);
+  
   if (postsToRender === null) {
     allPosts = await getPublishedPosts();
     postsToRender = allPosts;
@@ -505,6 +507,8 @@ async function renderPosts(postsToRender = null) {
   }
 
   let posts = postsToRender;
+  console.log(`[renderPosts] Total posts to render: ${posts.length}`);
+  
   // Deduplicate by id to avoid duplicate cards
   const seen = new Set();
   posts = posts.filter((p) => {
@@ -528,6 +532,8 @@ async function renderPosts(postsToRender = null) {
   postsRoot.innerHTML = "";
 
   for (const post of posts) {
+    console.log(`[renderPosts] Processing post - id: ${post.id}, title: ${post.title}, likes: ${post.likes || 0}, comments: ${post.comments || 0}`);
+    
     const el = document.createElement("article");
     el.className = "post card";
 
@@ -546,6 +552,8 @@ async function renderPosts(postsToRender = null) {
 
     // Get comments (support threaded comments with parentId)
     const comments = await getPostComments(post.id);
+    console.log(`[renderPosts] Post ${post.id} has ${comments.length} comments:`, comments);
+    
     // build comment tree map
     const commentsByParent = {};
     comments.forEach((c) => {
@@ -584,17 +592,10 @@ async function renderPosts(postsToRender = null) {
         </div>`;
     }
     const allComments = commentsByParent[null] || [];
-    let showAll = false;
-    let commentsToShow = allComments;
-    let showAllBtnHTML = '';
-    if (allComments.length > 3) {
-      commentsToShow = allComments.slice(0, 3);
-      showAllBtnHTML = `<button class="showAllCommentsBtn">Show all comments (${allComments.length})</button>`;
-    }
     const commentsHTML =
-      commentsToShow.length === 0
+      allComments.length === 0
         ? '<div class="pf-empty">No comments yet</div>'
-        : commentsToShow.map(renderComment).join("");
+        : allComments.map(renderComment).join("");
 
     const tagsHTML =
       (post.tags || []).length > 0
@@ -653,7 +654,10 @@ async function renderPosts(postsToRender = null) {
           <button class="closeCommentsModal" aria-label="Close">×</button>
           <h3>${t('comments')}</h3>
           <div class="commentList">
-            ${allComments.map(renderComment).join('')}
+            ${allComments.length === 0 
+              ? '<div class="pf-empty" style="padding:20px;text-align:center;color:#888;">No comments yet</div>' 
+              : allComments.map(renderComment).join('')
+            }
           </div>
           <form class="commentForm" data-post-id="${post.id}">
             ${auth.currentUser ? "" : `<input name="name" placeholder="Name (optional)"/>`}
@@ -676,6 +680,8 @@ async function renderPosts(postsToRender = null) {
         commentsModal.setAttribute('aria-hidden', 'false');
       });
       closeCommentsModal.addEventListener('click', () => {
+        // Blur the button before hiding to avoid focus issues
+        closeCommentsModal.blur();
         commentsModal.classList.add('hidden');
         commentsModal.setAttribute('aria-hidden', 'true');
       });
@@ -709,15 +715,7 @@ async function renderPosts(postsToRender = null) {
       });
     });
 
-    // Show all comments button handler
-    if (allComments.length > 3) {
-      const showAllBtn = el.querySelector('.showAllCommentsBtn');
-      const commentList = el.querySelector('.commentList');
-      showAllBtn.addEventListener('click', () => {
-        commentList.innerHTML = allComments.map(renderComment).join('');
-        showAllBtn.remove();
-      });
-    }
+    // Show all comments button handler (removed - now showing all comments by default)
 
     const readMoreBtn = el.querySelector(".readMore");
     const contentText = el.querySelector(".postContentText");
@@ -760,6 +758,8 @@ async function renderPosts(postsToRender = null) {
       const countSpan = btn.querySelector(".count");
       let count = parseInt(countSpan.textContent) || 0;
 
+      console.log(`[likeBtn] Clicked - postId: ${postId}, userId: ${auth.currentUser.uid}, isCurrentlyLiked: ${isCurrentlyLiked}, count: ${count}`);
+
       // Instant UI update
       if (isCurrentlyLiked) {
         btn.dataset.like = "false";
@@ -775,26 +775,33 @@ async function renderPosts(postsToRender = null) {
 
       // Sync with backend
       try {
+        let result;
         if (isCurrentlyLiked) {
-          await unlikePost(postId, auth.currentUser.uid);
+          console.log(`[likeBtn] Calling unlikePost...`);
+          result = await unlikePost(postId, auth.currentUser.uid);
+          if (!result) throw new Error("Failed to unlike");
+          console.log(`[likeBtn] Unlike successful`);
           if (window.pushAppNotification)
-            window.pushAppNotification("Interaction", "You unliked a post");
+            window.pushAppNotification("Interaction", "You unliked this post");
         } else {
-          await likePost(postId, auth.currentUser.uid);
+          console.log(`[likeBtn] Calling likePost...`);
+          result = await likePost(postId, auth.currentUser.uid);
+          if (!result) throw new Error("Failed to like");
+          console.log(`[likeBtn] Like successful`);
           if (window.pushAppNotification)
-            window.pushAppNotification("Interaction", "You liked a post");
+            window.pushAppNotification("Interaction", "You liked this post!");
         }
       } catch (err) {
+        console.error("Like error:", err);
         // Revert UI if backend fails
-        if (isCurrentlyLiked) {
-          btn.dataset.like = "true";
+        const newIsLiked = isCurrentlyLiked;
+        btn.dataset.like = String(newIsLiked);
+        if (newIsLiked) {
           btn.classList.add("liked");
-          count = count + 1;
         } else {
-          btn.dataset.like = "false";
           btn.classList.remove("liked");
-          count = Math.max(0, count - 1);
         }
+        count = isCurrentlyLiked ? count + 1 : Math.max(0, count - 1);
         countSpan.textContent = String(count);
         showNotification("Failed to update like. Please try again.", "error");
       }
@@ -848,34 +855,116 @@ async function renderPosts(postsToRender = null) {
     // Comment form handler
     el.querySelector(".commentForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      
+      // Require authentication to comment
+      if (!auth.currentUser) {
+        showNotification("Please log in to comment", "error");
+        return;
+      }
+
       const form = e.target;
       const postId = form.dataset.postId;
-      const name = auth.currentUser
-        ? currentUserData?.displayName || auth.currentUser.email
-        : form.elements.name?.value || "Anonymous";
+      
+      // Get username - prioritize current user's displayName
+      const name = currentUserData?.displayName || auth.currentUser.displayName || auth.currentUser.email || "User";
+      
       const text = form.elements.text.value.trim();
 
-      if (!text) return;
+      if (!text) {
+        showNotification("Please enter a comment", "error");
+        return;
+      }
 
       // Instant UI update
       const commentList = el.querySelector('.commentList');
       const tempId = 'temp-' + Date.now();
       const tempComment = document.createElement('div');
-      tempComment.className = 'comment';
+      tempComment.className = 'commentBox';
       tempComment.dataset.temp = tempId;
       tempComment.innerHTML = `<div class="commentName">${escapeHTML(name)}</div><div class="commentText">${escapeHTML(text)}</div>`;
+      
+      // Remove "No comments yet" message if it exists
+      const emptyMsg = commentList.querySelector('.pf-empty');
+      if (emptyMsg) emptyMsg.remove();
+      
       commentList.appendChild(tempComment);
       form.reset();
 
       // Sync with backend
       try {
-        await addComment(postId, auth.currentUser?.uid || "", name, text);
+        const commentId = await addComment(
+          postId, 
+          auth.currentUser.uid,
+          name, 
+          text
+        );
+        
+        if (!commentId) {
+          throw new Error("Failed to create comment");
+        }
+        
+        console.log(`[submitComment] Comment posted successfully: ${commentId}`);
+        
         if (window.pushAppNotification)
-          window.pushAppNotification("Comment", "Your comment was posted");
-        // Optionally, re-render or update comment with real data
-        await renderPosts();
+          window.pushAppNotification("Comment", "Your comment was posted!");
+        
+        // Refresh comments in the modal instead of re-rendering all posts
+        const freshComments = await getPostComments(postId);
+        console.log(`[submitComment] Refreshed comments - now have ${freshComments.length} total`);
+        
+        // Update the modal with fresh comments
+        const commentList = el.querySelector('.commentList');
+        const commentsByParent = {};
+        freshComments.forEach((c) => {
+          const pid = c.parentId || null;
+          if (!commentsByParent[pid]) commentsByParent[pid] = [];
+          commentsByParent[pid].push(c);
+        });
+        
+        function renderComment(c) {
+          const replies = commentsByParent[c.id] || [];
+          const likeCount = c.likes || 0;
+          const isLiked = c.likedByCurrentUser || false;
+          return `
+            <div class="commentBox${c.parentId ? ' reply' : ''}" style="background:${c.parentId ? 'var(--bg-secondary, #f7f7fa)' : 'var(--bg-primary, #fff)'};border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                <div class="commentAvatar" style="width:32px;height:32px;border-radius:50%;background:#e3e3e3;display:flex;align-items:center;justify-content:center;font-weight:700;color:#457b9d;font-size:15px;">
+                  ${escapeHTML((c.userName||'A').charAt(0).toUpperCase())}
+                </div>
+                <div style="flex:1;">
+                  <span class="commentName" style="font-weight:600;color:#222;font-size:15px;">${escapeHTML(c.userName)}</span>
+                  <span style="color:#aaa;font-size:12px;margin-left:8px;">${c.createdAt ? new Date(c.createdAt).toLocaleString() : ''}</span>
+                </div>
+              </div>
+              <div class="commentText" style="margin-bottom:10px;color:#333;font-size:14px;line-height:1.7;">${escapeHTML(c.text)}</div>
+              <div class="commentActions" style="display:flex;align-items:center;gap:12px;">
+                <button class="commentLikeBtn${isLiked ? ' liked' : ''}" data-comment-id="${c.id}" data-liked="${isLiked}" style="background:none;border:none;cursor:pointer;color:${isLiked ? '#e63946' : '#aaa'};font-size:16px;transition:color 0.2s;">♡</button>
+                <span class="commentLikeCount" style="font-size:13px;color:#888;">${likeCount}</span>
+                <button class="replyBtn" data-comment-id="${c.id}" style="background:none;border:none;cursor:pointer;color:#457b9d;font-size:13px;">Reply</button>
+              </div>
+              ${
+                replies.length > 0
+                  ? `<div class="commentReplies" style="margin-top:12px;padding-left:18px;border-left:2px solid #f0f0f0;">${replies
+                      .map(renderComment)
+                      .join('')}</div>`
+                  : ''
+              }
+            </div>`;
+        }
+        
+        const allComments = commentsByParent[null] || [];
+        commentList.innerHTML = allComments.length === 0 
+          ? '<div class="pf-empty">No comments yet</div>'
+          : allComments.map(renderComment).join('');
+        
+        // Also update comment count button
+        const openCommentsBtn = el.querySelector('.openCommentsBtn');
+        if (openCommentsBtn) {
+          openCommentsBtn.textContent = `💬 ${t('comments')} (${freshComments.length})`;
+        }
+        
       } catch (err) {
-        // Remove temp comment if backend fails
+        console.error("Comment error:", err);
         tempComment.remove();
         showNotification("Failed to post comment. Please try again.", "error");
       }

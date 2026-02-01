@@ -26,31 +26,54 @@
 
 .commentsModal.modal {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.45);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: auto;
+  background: rgba(0,0,0,0.4);
   z-index: 1000;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   transition: opacity 0.2s;
+  animation: slideUpFromBottom 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+@keyframes slideUpFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.commentsModal.modal.hidden {
+  display: none;
+  animation: none;
+}
+
 .commentsModal .modal-content {
   background: var(--card);
-  border-radius: 16px;
-  padding: 32px 28px 24px 28px;
-  min-width: 340px;
-  max-width: 420px;
+  border-radius: 20px 20px 0 0;
+  padding: 28px 28px 32px 28px;
   width: 100%;
-  box-shadow: 0 8px 32px rgba(67,123,157,0.18);
+  max-width: 100%;
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.2);
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 18px;
+  max-height: 85vh;
+  overflow: hidden;
 }
 .commentsModal .closeCommentsModal {
   position: absolute;
   top: 16px;
-  left: 16px;
+  right: 16px;
   background: none;
   border: none;
   font-size: 22px;
@@ -58,9 +81,17 @@
   cursor: pointer;
   font-weight: bold;
   transition: color 0.2s;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
 }
+
 .commentsModal .closeCommentsModal:hover {
   color: var(--accent-primary);
+  background: var(--soft);
 }
 .commentsModal h3 {
   margin: 0 0 10px 0;
@@ -68,17 +99,21 @@
   color: var(--accent-tertiary);
   font-weight: 700;
   text-align: left;
+  padding-right: 40px;
 }
 .commentsModal .commentList {
-  max-height: 260px;
+  max-height: 45vh;
   overflow-y: auto;
   margin-bottom: 8px;
+  flex: 1;
 }
 .commentsModal .commentForm {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 8px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
 }
 .commentsModal .commentForm textarea {
   border-radius: 8px;
