@@ -88,6 +88,25 @@ export async function renderProfileModalFancy() {
 
         <p class="pf-bio">${escapeHTML(me.bio || "No bio yet. Tell people about yourself.")}</p>
 
+        ${me.facebook || me.instagram ? `
+        <div class="pf-socialLinks" style="display:flex;gap:16px;margin:20px 0;justify-content:center;flex-wrap:wrap;">
+          ${me.facebook ? `<a href="${escapeHTML(me.facebook)}" target="_blank" rel="noopener" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 28px;border-radius:16px;background:linear-gradient(135deg,#1877f2,#0c63d4);color:#fff;text-decoration:none;transition:all 0.3s;box-shadow:0 2px 10px rgba(24,119,242,0.4);min-width:120px;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 6px 20px rgba(24,119,242,0.6)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 10px rgba(24,119,242,0.4)'">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 2h-3a6 6 0 0 0-6 6v3H7v4h2v8h4v-8h3l1-4h-4V8a2 2 0 0 1 2-2h3z"></path>
+            </svg>
+            <span style="font-size:14px;font-weight:700;">Facebook</span>
+          </a>` : ''}
+          ${me.instagram ? `<a href="${escapeHTML(me.instagram)}" target="_blank" rel="noopener" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 28px;border-radius:16px;background:linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);color:#fff;text-decoration:none;transition:all 0.3s;box-shadow:0 2px 10px rgba(225,48,108,0.4);min-width:120px;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 6px 20px rgba(225,48,108,0.6)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 10px rgba(225,48,108,0.4)'">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+              <circle cx="17.5" cy="6.5" r="1.5"></circle>
+            </svg>
+            <span style="font-size:14px;font-weight:700;">Instagram</span>
+          </a>` : ''}
+        </div>
+        ` : ''}
+
         <div class="pf-actions">
           <button id="pf-editBtn" class="btn">Edit Profile</button>
           <button id="pf-openPosts" class="btn btn-ghost">View Posts</button>
@@ -149,8 +168,8 @@ export async function renderProfileModalFancy() {
             <label>Display name<input name="displayName" value="${escapeHTML(me.displayName || "")}" /></label>
             <label>Bio<textarea name="bio">${escapeHTML(me.bio || "")}</textarea></label>
             <label>Website<input name="website" value="${escapeHTML(me.website || "")}" /></label>
-            <label>Twitter<input name="twitter" value="${escapeHTML(me.twitter || "")}" /></label>
-            <label>Instagram<input name="instagram" value="${escapeHTML(me.instagram || "")}" /></label>
+            <label>Facebook<input name="facebook" placeholder="https://facebook.com/yourprofile" value="${escapeHTML(me.facebook || "")}" /></label>
+            <label>Instagram<input name="instagram" placeholder="https://instagram.com/yourprofile" value="${escapeHTML(me.instagram || "")}" /></label>
             <div style="display:flex;gap:8px;margin-top:8px">
               <button type="submit" class="btn">Save changes</button>
               <button type="button" id="pf-cancelEdit" class="btn btn-ghost">Cancel</button>
@@ -281,7 +300,7 @@ export async function renderProfileModalFancy() {
       displayName: fm.get("displayName")?.trim() || "",
       bio: fm.get("bio")?.trim() || "",
       website: fm.get("website")?.trim() || "",
-      twitter: fm.get("twitter")?.trim() || "",
+      facebook: fm.get("facebook")?.trim() || "",
       instagram: fm.get("instagram")?.trim() || "",
     };
 

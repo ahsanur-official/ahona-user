@@ -82,7 +82,7 @@ Collections:
        notifications: boolean
      }
    - website: string
-   - twitter: string
+   - facebook: string
    - instagram: string
    - writingGoal: number (words)
 
@@ -178,7 +178,7 @@ async function registerUser(email, password, username, displayName) {
         notifications: true,
       },
       website: "",
-      twitter: "",
+      facebook: "",
       instagram: "",
       writingGoal: 500,
     });
