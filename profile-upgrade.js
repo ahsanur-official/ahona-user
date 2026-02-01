@@ -88,12 +88,6 @@ export async function renderProfileModalFancy() {
 
         <p class="pf-bio">${escapeHTML(me.bio || "No bio yet. Tell people about yourself.")}</p>
 
-        <div class="pf-stats">
-          <div><strong>${analytics.totalPosts || posts.length}</strong><div class="pf-statLabel">Posts</div></div>
-          <div><strong>${analytics.totalViews || 0}</strong><div class="pf-statLabel">Views</div></div>
-          <div><strong>${analytics.totalLikes || 0}</strong><div class="pf-statLabel">Likes</div></div>
-        </div>
-
         <div class="pf-actions">
           <button id="pf-editBtn" class="btn">Edit Profile</button>
           <button id="pf-openPosts" class="btn btn-ghost">View Posts</button>
