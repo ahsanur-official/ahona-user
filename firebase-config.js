@@ -627,7 +627,7 @@ async function isPostLikedByUser(postId, userId) {
 // Comment Functions
 // ============================================
 
-async function addComment(postId, userId, userName, text) {
+async function addComment(postId, userId, userName, text, userProfilePic = null) {
   try {
     console.log(`[addComment] Starting - postId: ${postId}, userId: ${userId}, userName: ${userName}, text: ${text.substring(0, 50)}...`);
     
@@ -650,7 +650,7 @@ async function addComment(postId, userId, userName, text) {
     }
     console.log(`[addComment] Post exists, comments field: ${postSnap.data().comments}`);
     
-    const docRef = await addDoc(collection(db, "comments"), {
+    const commentData = {
       postId: postId,
       userId: userId,
       userName: userName,
@@ -658,7 +658,14 @@ async function addComment(postId, userId, userName, text) {
       parentId: null,
       createdAt: serverTimestamp(),
       likes: 0,
-    });
+    };
+    
+    // Add profile pic if provided
+    if (userProfilePic) {
+      commentData.userProfilePic = userProfilePic;
+    }
+    
+    const docRef = await addDoc(collection(db, "comments"), commentData);
     console.log(`[addComment] Comment created with ID: ${docRef.id}`);
 
     // Increment post comment count

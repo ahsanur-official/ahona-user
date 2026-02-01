@@ -1006,18 +1006,18 @@ async function renderPosts(postsToRender = null) {
         }
       }
       return `
-        <div class="commentBox${c.parentId ? ' reply' : ''}" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px;transition:all 0.2s;">
+        <div class="commentBox${c.parentId ? ' reply' : ''}" style="background:#161b22;border:1px solid #30363d;border-radius:12px;padding:16px;margin-bottom:12px;transition:all 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);">
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-            <div class="commentAvatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent-primary),var(--accent-secondary));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-              ${escapeHTML((c.userName||'A').charAt(0).toUpperCase())}
+            <div class="commentAvatar" style="width:40px;height:40px;border-radius:50%;background:${c.userProfilePic ? '#e3e3e3' : 'linear-gradient(135deg,var(--accent-primary),var(--accent-secondary))'};display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;flex-shrink:0;">
+              ${c.userProfilePic ? `<img src="${c.userProfilePic}" alt="${escapeHTML(c.userName || 'User')}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,var(--accent-primary),var(--accent-secondary))';this.parentElement.textContent='${escapeHTML((c.userName||'A').charAt(0).toUpperCase())}'">` : escapeHTML((c.userName||'A').charAt(0).toUpperCase())}
             </div>
             <div style="flex:1;">
               <span class="commentName" style="font-weight:600;color:var(--text);font-size:15px;">${escapeHTML(c.userName || 'Anonymous')}</span>
               <span style="color:var(--text-secondary);font-size:12px;margin-left:8px;">${dateStr}</span>
             </div>
           </div>
-          <div class="commentText" style="margin-bottom:12px;color:var(--text);font-size:14px;line-height:1.7;">${escapeHTML(c.text || '')}</div>
-          <div class="commentActions" style="display:flex;align-items:center;gap:16px;">
+          <div class="commentText" style="margin-bottom:12px;color:var(--text);font-size:14px;line-height:1.7;padding-left:52px;">${escapeHTML(c.text || '')}</div>
+          <div class="commentActions" style="display:flex;align-items:center;gap:16px;padding-left:52px;">
             <button class="commentLikeBtn${isLiked ? ' liked' : ''}" data-comment-id="${c.id}" data-liked="${isLiked}" style="background:none;border:none;cursor:pointer;color:${isLiked ? '#e63946' : 'var(--text-secondary)'};font-size:18px;transition:all 0.2s;display:flex;align-items:center;gap:4px;">
               <span>♥</span>
               <span class="commentLikeCount" style="font-size:13px;">${likeCount}</span>
@@ -1025,7 +1025,7 @@ async function renderPosts(postsToRender = null) {
           </div>
           ${
             replies.length > 0
-              ? `<div class="commentReplies" style="margin-top:12px;padding-left:20px;border-left:3px solid var(--accent-primary);">${replies
+              ? `<div class="commentReplies" style="margin-top:12px;padding-left:52px;border-left:3px solid var(--accent-primary);">${replies
                   .map(renderComment)
                   .join('')}</div>`
               : ''
@@ -1345,22 +1345,62 @@ async function renderPosts(postsToRender = null) {
       const tempComment = document.createElement('div');
       tempComment.className = 'commentBox';
       tempComment.dataset.temp = tempId;
-      tempComment.innerHTML = `<div class="commentName">${escapeHTML(name)}</div><div class="commentText">${escapeHTML(text)}</div>`;
+      tempComment.style.cssText = 'background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.2);';
+      const userProfilePic = currentUserData?.profilePic || null;
+      tempComment.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <div class="commentAvatar" style="width:36px;height:36px;border-radius:50%;background:${userProfilePic ? '#e3e3e3' : 'linear-gradient(135deg,var(--accent-primary),var(--accent-secondary))'};display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:15px;overflow:hidden;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,0.1);">
+            ${userProfilePic ? `<img src="${userProfilePic}" alt="${escapeHTML(name)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,var(--accent-primary),var(--accent-secondary))';this.parentElement.textContent='${escapeHTML(name.charAt(0).toUpperCase())}'">` : escapeHTML(name.charAt(0).toUpperCase())}
+          </div>
+          <div style="flex:1;">
+            <span class="commentName" style="font-weight:600;color:var(--text, #222);font-size:15px;">${escapeHTML(name)}</span>
+            <span style="color:var(--text-secondary, #aaa);font-size:12px;margin-left:8px;">Just now</span>
+          </div>
+        </div>
+        <div class="commentText" style="margin-bottom:10px;color:var(--text);font-size:14px;line-height:1.7;padding-left:46px;">${escapeHTML(text)}</div>
+        <div class="commentActions" style="display:flex;align-items:center;gap:12px;padding-left:46px;">
+          <button style="background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:16px;display:flex;align-items:center;gap:4px;">
+            <span>♥</span>
+            <span class="commentLikeCount" style="font-size:13px;">0</span>
+          </button>
+        </div>
+      `;
       
       // Remove "No comments yet" message if it exists
       const emptyMsg = commentList.querySelector('.pf-empty');
       if (emptyMsg) emptyMsg.remove();
       
       commentList.appendChild(tempComment);
+      
+      // Update comment count instantly in both toggle button and section heading
+      const postCard = el; // Current post element
+      const toggleCommentsBtn = postCard.querySelector('.toggleCommentsBtn');
+      const commentCountSpan = toggleCommentsBtn?.querySelector('.commentCount');
+      const commentsSection = postCard.querySelector('.commentsSection');
+      const commentsSectionHeading = commentsSection?.querySelector('h4');
+      
+      if (commentCountSpan) {
+        const currentCount = parseInt(commentCountSpan.textContent) || 0;
+        const newCount = currentCount + 1;
+        commentCountSpan.textContent = newCount;
+        
+        // Also update the heading "Comments (X)"
+        if (commentsSectionHeading) {
+          commentsSectionHeading.textContent = `${t('comments')} (${newCount})`;
+        }
+      }
+      
       form.reset();
 
       // Sync with backend
       try {
+        const userProfilePic = currentUserData?.profilePic || null;
         const commentId = await addComment(
           postId, 
           auth.currentUser.uid,
           name, 
-          text
+          text,
+          userProfilePic
         );
         
         if (!commentId) {
@@ -1389,26 +1429,36 @@ async function renderPosts(postsToRender = null) {
           const replies = commentsByParent[c.id] || [];
           const likeCount = c.likes || 0;
           const isLiked = c.likedByCurrentUser || false;
+          let dateStr = '';
+          if (c.createdAt) {
+            try {
+              const date = c.createdAt.toDate ? c.createdAt.toDate() : new Date(c.createdAt);
+              dateStr = date.toLocaleString();
+            } catch (e) {
+              dateStr = '';
+            }
+          }
           return `
-            <div class="commentBox${c.parentId ? ' reply' : ''}" style="background:${c.parentId ? 'var(--bg-secondary, #f7f7fa)' : 'var(--bg-primary, #fff)'};border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-                <div class="commentAvatar" style="width:32px;height:32px;border-radius:50%;background:#e3e3e3;display:flex;align-items:center;justify-content:center;font-weight:700;color:#457b9d;font-size:15px;">
-                  ${escapeHTML((c.userName||'A').charAt(0).toUpperCase())}
+            <div class="commentBox${c.parentId ? ' reply' : ''}" style="background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.2);">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <div class="commentAvatar" style="width:36px;height:36px;border-radius:50%;background:${c.userProfilePic ? '#e3e3e3' : 'linear-gradient(135deg,var(--accent-primary),var(--accent-secondary))'};display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:15px;overflow:hidden;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,0.1);">
+                  ${c.userProfilePic ? `<img src="${c.userProfilePic}" alt="${escapeHTML(c.userName || 'User')}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,var(--accent-primary),var(--accent-secondary))';this.parentElement.textContent='${escapeHTML((c.userName||'A').charAt(0).toUpperCase())}'">` : escapeHTML((c.userName||'A').charAt(0).toUpperCase())}
                 </div>
                 <div style="flex:1;">
-                  <span class="commentName" style="font-weight:600;color:#222;font-size:15px;">${escapeHTML(c.userName)}</span>
-                  <span style="color:#aaa;font-size:12px;margin-left:8px;">${c.createdAt ? new Date(c.createdAt).toLocaleString() : ''}</span>
+                  <span class="commentName" style="font-weight:600;color:var(--text);font-size:15px;">${escapeHTML(c.userName)}</span>
+                  <span style="color:var(--text-secondary);font-size:12px;margin-left:8px;">${dateStr}</span>
                 </div>
               </div>
-              <div class="commentText" style="margin-bottom:10px;color:#333;font-size:14px;line-height:1.7;">${escapeHTML(c.text)}</div>
-              <div class="commentActions" style="display:flex;align-items:center;gap:12px;">
-                <button class="commentLikeBtn${isLiked ? ' liked' : ''}" data-comment-id="${c.id}" data-liked="${isLiked}" style="background:none;border:none;cursor:pointer;color:${isLiked ? '#e63946' : '#aaa'};font-size:16px;transition:color 0.2s;">♡</button>
-                <span class="commentLikeCount" style="font-size:13px;color:#888;">${likeCount}</span>
-                <button class="replyBtn" data-comment-id="${c.id}" style="background:none;border:none;cursor:pointer;color:#457b9d;font-size:13px;">Reply</button>
+              <div class="commentText" style="margin-bottom:10px;color:var(--text);font-size:14px;line-height:1.7;padding-left:46px;">${escapeHTML(c.text)}</div>
+              <div class="commentActions" style="display:flex;align-items:center;gap:12px;padding-left:46px;">
+                <button class="commentLikeBtn${isLiked ? ' liked' : ''}" data-comment-id="${c.id}" data-liked="${isLiked}" style="background:none;border:none;cursor:pointer;color:${isLiked ? '#e63946' : 'var(--text-secondary)'};font-size:16px;transition:color 0.2s;display:flex;align-items:center;gap:4px;">
+                  <span>♥</span>
+                  <span class="commentLikeCount" style="font-size:13px;">${likeCount}</span>
+                </button>
               </div>
               ${
                 replies.length > 0
-                  ? `<div class="commentReplies" style="margin-top:12px;padding-left:18px;border-left:2px solid #f0f0f0;">${replies
+                  ? `<div class="commentReplies" style="margin-top:12px;padding-left:46px;border-left:2px solid var(--border);">${replies
                       .map(renderComment)
                       .join('')}</div>`
                   : ''
@@ -1420,6 +1470,48 @@ async function renderPosts(postsToRender = null) {
         commentList.innerHTML = allComments.length === 0 
           ? '<div class="pf-empty">No comments yet</div>'
           : allComments.map(renderComment).join('');
+        
+        // Re-attach event listeners for comment like buttons in modal
+        el.querySelectorAll('.commentLikeBtn').forEach(btn => {
+          btn.addEventListener('click', async function() {
+            if (!auth.currentUser) {
+              showNotification("Please log in to like comments", "error");
+              return;
+            }
+
+            const commentId = btn.dataset.commentId;
+            const likeCountSpan = btn.querySelector('.commentLikeCount');
+            const isLiked = btn.dataset.liked === 'true';
+            let count = parseInt(likeCountSpan.textContent) || 0;
+            
+            // Instant UI update
+            if (isLiked) {
+              btn.dataset.liked = 'false';
+              btn.classList.remove('liked');
+              btn.style.color = 'var(--text-secondary)';
+              count = Math.max(0, count - 1);
+              likeCountSpan.textContent = String(count);
+              
+              // Sync with backend
+              await unlikeComment(commentId, auth.currentUser.uid);
+            } else {
+              btn.dataset.liked = 'true';
+              btn.classList.add('liked');
+              btn.style.color = '#e63946';
+              count = count + 1;
+              likeCountSpan.textContent = String(count);
+              
+              // Sync with backend
+              const userName = currentUserData?.displayName || auth.currentUser.displayName || auth.currentUser.email || "Someone";
+              await likeComment(commentId, auth.currentUser.uid, userName);
+              
+              // Reload notifications
+              if (auth.currentUser) {
+                setTimeout(() => loadNotifications(), 1000);
+              }
+            }
+          });
+        });
         
         // Also update comment count button
         const toggleCommentsBtn = el.querySelector('.toggleCommentsBtn');
